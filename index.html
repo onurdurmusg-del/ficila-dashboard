@@ -154,25 +154,20 @@ body::before {
 
 /* ── HERO ── */
 .hero {
-  padding: 48px 40px 40px;
+  padding: 16px 40px;
   border-bottom: 1px solid var(--border);
   position: relative;
   overflow: hidden;
   animation: fadeUp 0.4s ease both;
-}
-.hero::after {
-  content: '';
-  position: absolute;
-  top: -100px; right: -100px;
-  width: 500px; height: 500px;
-  background: radial-gradient(circle, rgba(255,213,0,0.05) 0%, transparent 60%);
-  pointer-events: none;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
 }
 .hero-eyebrow {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 14px;
 }
 .chip {
   display: inline-flex;
@@ -195,17 +190,7 @@ body::before {
 .chip-orange{ background: var(--orange-dim); border-color: rgba(249,115,22,0.3);  color: var(--orange); }
 .chip-purple{ background: var(--purple-dim); border-color: rgba(167,139,250,0.3); color: var(--purple); }
 
-.hero h1 {
-  font-size: 36px;
-  font-weight: 700;
-  letter-spacing: -1px;
-  line-height: 1.15;
-  margin-bottom: 10px;
-}
-.hero h1 em { font-style: normal; color: var(--gold); }
-.hero-sub { color: var(--muted); font-size: 15px; max-width: 560px; margin-bottom: 32px; }
-
-.stats-row { display: flex; gap: 0; flex-wrap: wrap; }
+.stats-row { display: flex; gap: 0; flex-wrap: wrap; margin-left: auto; }
 .stat-item {
   padding: 16px 28px;
   border-right: 1px solid var(--border);
@@ -601,6 +586,7 @@ main { padding: 32px 40px; display: flex; flex-direction: column; gap: 32px; }
   grid-template-columns: repeat(4, 1fr);
   gap: 10px;
 }
+@media (max-width: 1200px) { .kpi-band { grid-template-columns: repeat(4, 1fr); } }
 .kpi-card {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -646,7 +632,7 @@ main { padding: 32px 40px; display: flex; flex-direction: column; gap: 32px; }
   .live-strip { padding: 8px 16px; }
   .kpi-band { grid-template-columns: repeat(2, 1fr); }
   .week-grid { grid-template-columns: 1fr; }
-  .live-2col { grid-template-columns: 1fr !important; }
+  .live-2col, .live-3col { grid-template-columns: 1fr !important; }
   .completed-grid { grid-template-columns: 1fr; }
   .verify-drawer { padding: 16px 16px; flex-direction: column; }
   .stat-item { padding: 10px 14px; }
@@ -690,6 +676,7 @@ footer {
 .live-refresh { background:none; border:1px solid var(--border); border-radius:20px; color:var(--muted); font-size:11px; font-family:'Space Grotesk',sans-serif; padding:3px 12px; cursor:pointer; transition:color .2s; }
 .live-refresh:hover { color:var(--text); }
 .live-2col { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:12px; }
+.live-3col { grid-template-columns:1fr 1fr 1fr; }
 .live-card { background:var(--surface2); border-radius:8px; padding:14px; }
 .live-card-title { font-size:11px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; margin-bottom:10px; }
 .ltable { width:100%; border-collapse:collapse; font-size:11px; }
@@ -747,36 +734,30 @@ footer {
   <div class="live-src"><span class="live-dot spin" id="dot-proxy"></span><span id="lbl-proxy">Google Ads Proxy bekleniyor…</span></div>
   <div class="live-src"><span class="live-dot spin" id="dot-sheets"></span><span id="lbl-sheets">Sheets bekleniyor…</span></div>
   <span class="live-ts" id="live-ts"></span>
-  <button class="live-refresh" onclick="loadAllLive()">↻ Yenile</button>
 </div>
 
-<!-- HERO -->
+<!-- HERO — kompakt şerit -->
 <header class="hero">
   <div class="hero-eyebrow">
     <span class="chip chip-blue" id="hero-week-chip">Hafta … · …</span>
+    <span style="font-size:12px;color:var(--muted);font-weight:600;">Fıçıla Yönetim Paneli</span>
   </div>
-  <h1>Fıçıla <em>Yönetim Paneli</em></h1>
-  <p class="hero-sub">4 ajan canlı izliyor — SEO, Reklam, UX, İçerik & Analytics. Veriler otomatik güncellenir.</p>
   <div class="stats-row">
     <div class="stat-item">
-      <div class="stat-num" style="color:var(--blue)">1.435</div>
-      <div class="stat-lbl">Organik Tıklama / Hafta</div>
+      <div class="stat-num" style="color:var(--green)" id="hero-sales">—</div>
+      <div class="stat-lbl">Aylık Satış</div>
     </div>
     <div class="stat-item">
-      <div class="stat-num" style="color:var(--green)">1.000 ₺</div>
-      <div class="stat-lbl">Haftalık Reklam Bütçesi</div>
+      <div class="stat-num" style="color:var(--blue)" id="hero-organic">—</div>
+      <div class="stat-lbl">Organik Oturum</div>
     </div>
     <div class="stat-item">
-      <div class="stat-num" style="color:var(--green)">2+3</div>
-      <div class="stat-lbl">Meta AKTİF · Google Ads çalışıyor</div>
+      <div class="stat-num" style="color:var(--red)" id="hero-cpc">—</div>
+      <div class="stat-lbl">Google Ads CPC</div>
     </div>
     <div class="stat-item">
-      <div class="stat-num" style="color:var(--red)">2</div>
+      <div class="stat-num" style="color:var(--yellow)" id="hero-kritik" id="kritik-hero-num">2</div>
       <div class="stat-lbl">Kritik Aksiyon</div>
-    </div>
-    <div class="stat-item">
-      <div class="stat-num" style="color:var(--purple)">26</div>
-      <div class="stat-lbl">Tamamlanan Fix</div>
     </div>
   </div>
 </header>
@@ -811,11 +792,57 @@ footer {
     </div>
   </section>
 
+  <!-- HIZLI AKSİYONLAR -->
+  <section class="fade-up">
+    <div class="section-hdr">
+      <span class="section-title">Claude ile Hızlı Çalış</span>
+      <span style="font-size:11px;color:var(--dim)">Butona tıkla → kopyala → Claude'a yapıştır</span>
+    </div>
+    <div class="commands-grid">
+      <button class="cmd-btn" onclick="copyCmd('ficila.com.tr için bu haftaki SEO durumunu analiz et, GSC quick-win fırsatlarını listele ve öncelikli aksiyonları belirt')">
+        <span class="cmd-emoji">🔍</span>
+        <div class="cmd-name">SEO Analizi</div>
+        <div class="cmd-desc">Organik trafik, sıralama değişimleri, quick-win fırsatlar</div>
+        <span class="cmd-code">seo-analysis</span>
+      </button>
+      <button class="cmd-btn" onclick="copyCmd('ficila Meta ve Google Ads bu haftaki verilerle optimize et, CPC alarmı kontrol et, ROAS hesapla')">
+        <span class="cmd-emoji">📢</span>
+        <div class="cmd-name">Reklam Optimize</div>
+        <div class="cmd-desc">Google Ads + Meta · CPC/ROAS analizi · Kampanya önerileri</div>
+        <span class="cmd-code">reklam</span>
+      </button>
+      <button class="cmd-btn" onclick="copyCmd('ficila için sıradaki içerik takvimi yazısını yaz — ficila/DURUM.md dosyasına bakarak öncelikli konuyu belirle, SEO uyumlu Türkçe blog yazısı üret')">
+        <span class="cmd-emoji">✍️</span>
+        <div class="cmd-name">Blog Yaz</div>
+        <div class="cmd-desc">Takvime göre sıradaki blog yazısı — SEO + reklam uyumlu</div>
+        <span class="cmd-code">blog-content-writer</span>
+      </button>
+      <button class="cmd-btn" onclick="copyCmd('ficila.com.tr UX sorunlarını analiz et, özellikle mobil CTA, checkout akışı ve ürün sayfası dönüşüm engellerini değerlendir')">
+        <span class="cmd-emoji">🎨</span>
+        <div class="cmd-name">UX İncele</div>
+        <div class="cmd-desc">Mobil deneyim, checkout akışı, dönüşüm engelleri</div>
+        <span class="cmd-code">ecommerce-ux-designer</span>
+      </button>
+      <button class="cmd-btn" onclick="copyCmd('ficila GA4 ve GSC verilerini analiz et, organik dönüşüm izlemeyi kur, ROAS raporunu hazırla')">
+        <span class="cmd-emoji">📊</span>
+        <div class="cmd-name">Analytics Raporu</div>
+        <div class="cmd-desc">GA4 + GSC · Organik dönüşüm · ROAS hesaplama</div>
+        <span class="cmd-code">analytics</span>
+      </button>
+      <button class="cmd-btn" onclick="copyCmd('ficila tüm ajanlar paneli değerlendirsin ve bu haftanın öncelikli aksiyonlarını güncellesin')">
+        <span class="cmd-emoji">🔄</span>
+        <div class="cmd-name">Panel Güncelle</div>
+        <div class="cmd-desc">Tüm ajanlar devreye girer, haftalık plan güncellenir</div>
+        <span class="cmd-code">tüm ajanlar</span>
+      </button>
+    </div>
+  </section>
+
   <!-- KPI BAND -->
   <section class="fade-up">
     <div class="section-hdr">
       <span class="section-title">KPI & Analitik Özeti</span>
-      <span class="chip chip-blue">Mart 2026 · 1–29 Mar</span>
+      <span class="chip chip-blue" id="kpi-period-chip">Cari ay</span>
     </div>
     <div class="kpi-band">
       <div class="kpi-card">
@@ -854,6 +881,18 @@ footer {
         <div class="kpi-target" id="kpi-gads-cpc-target">Hedef: &lt;5 ₺ · 🔴 Alarm &gt;8 ₺</div>
         <div class="kpi-bar"><div class="kpi-fill" style="width:100%; background:var(--red)"></div></div>
       </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Ort. Arama Pozisyonu</div>
+        <div class="kpi-value" style="color:var(--blue)" id="kpi-position">—<span class="kpi-delta" id="kpi-position-delta"></span></div>
+        <div class="kpi-target" id="kpi-position-target">GSC · Cari ay</div>
+        <div class="kpi-bar"><div class="kpi-fill" id="kpi-position-bar" style="width:0%; background:var(--blue)"></div></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Tahmini ROAS</div>
+        <div class="kpi-value" style="color:var(--green)" id="kpi-roas">—<span class="kpi-delta" id="kpi-roas-delta"></span></div>
+        <div class="kpi-target" id="kpi-roas-target">Satış ÷ Reklam Harcaması</div>
+        <div class="kpi-bar"><div class="kpi-fill" id="kpi-roas-bar" style="width:0%; background:var(--green)"></div></div>
+      </div>
     </div>
   </section>
 
@@ -863,7 +902,7 @@ footer {
       <span class="section-title">Sosyal Medya &amp; Reklamlar</span>
       <span id="social-badge" class="chip chip-dim">Yükleniyor…</span>
     </div>
-    <div class="live-2col" style="grid-template-columns:1fr 1fr 1fr; gap:14px;">
+    <div class="live-2col live-3col" style="gap:14px;">
 
       <!-- Facebook + Meta Ads -->
       <div class="live-card">
@@ -914,338 +953,192 @@ footer {
     </div>
   </section>
 
-  <!-- AJAN ÖNERİLERİ -->
+  <!-- BU HAFTA NE YAPACAKSIN -->
   <section class="fade-up">
     <div class="section-hdr">
-      <span class="section-title">Ajan Önerileri</span>
-      <span style="font-size:11px; color:var(--dim)" id="agent-update-ts">Son kontrol: 29 Mar 2026</span>
+      <span class="section-title">Bu Hafta Ne Yapacaksın</span>
+      <span style="font-size:11px;color:var(--dim)" id="agent-update-ts">Canlı · otomatik güncelleniyor</span>
     </div>
     <div class="agent-grid">
 
-      <!-- SEO -->
-      <div class="card">
-        <div class="card-head">
-          <div class="card-title-row">
-            <div class="card-icon blue">🔍</div>
-            <div>
-              <div class="card-name">SEO Stratejisti</div>
-              <div class="card-sub">Organik büyüme & teknik SEO</div>
-            </div>
-          </div>
-          <div class="status-dot red" title="Aksiyon gerekli"></div>
-        </div>
-        <div class="card-section">
-          <ul class="rec-list" id="seo-recs">
-            <li>GSC'de nitro-kokteyl-receteler URL'i için "İndekse Al" isteği gönder</li>
-            <li>Blog yazısına <em>nitro kokteyl sistemi</em> / <em>nitro içecek reçetesi</em> terimlerini 2-3 kez ekle</li>
-            <li>N2 vs CO2 karşılaştırma yazısı — B2B kafe/bar sahipleri için — 8 Nisan hedefi</li>
-            <li>/nitro-kahve/ kategori sayfasına iç link ekle — PageRank akışı yok</li>
-          </ul>
-        </div>
-      </div>
-
-      <!-- REKLAM -->
-      <div class="card">
+      <!-- GÖREV: CPC -->
+      <div class="card" style="border-left:3px solid var(--red);">
         <div class="card-head">
           <div class="card-title-row">
             <div class="card-icon orange">📢</div>
             <div>
-              <div class="card-name">Reklam Ajanı</div>
-              <div class="card-sub">Google Ads · Meta Ads</div>
+              <div class="card-name">Google Ads CPC Optimize Et</div>
+              <div class="card-sub"><span class="chip chip-red" style="font-size:9px;">KRİTİK</span> &nbsp;Reklam Ajanı</div>
             </div>
           </div>
-          <div class="status-dot red" title="CPC alarm seviyesinde"></div>
+          <div class="status-dot red"></div>
         </div>
-        <div class="card-section">
-          <ul class="rec-list" id="ads-recs">
-            <li id="ads-rec-cpc">Nitro Kahve CPC: 10,24 ₺ — Max CPC bid'i 5 ₺'ye düşür, geniş eşleşmeleri kısıtla</li>
-            <li>Brand Protection + Nitro Kokteyl: 0 gösterim — bütçe artır veya teklif stratejisini manuel CPC'ye geçir</li>
-            <li>Search terms raporu: alakasız aramaları negatif listeye ekle</li>
-            <li>Meta: Nisan kampanyaları aktif — 7 günlük CTR verisi toplandığında A/B test yap</li>
-          </ul>
+        <ul class="rec-list" style="margin-bottom:12px;">
+          <li id="ads-rec-cpc">Nitro Kahve CPC alarm seviyesinde — Max CPC bid'i 5 ₺'ye düşür</li>
+          <li>Broad match anahtar kelimeleri phrase/exact match'e çevir</li>
+          <li>Bu haftanın search terms raporunu çek → alakasız sorguları negatife ekle</li>
+        </ul>
+        <div class="check-item" style="margin:0;" data-deletable="true"
+          data-verify-title="CPC Optimizasyonu Doğrulama"
+          data-verify-steps="Google Ads'e gir → Nitro Kahve kampanyasını aç|Anahtar kelime tekliflerini kontrol et — her biri ≤5 ₺ olmalı|Tümünü Yenile → KPI kartında CPC &lt;5 ₺ göründüğünü doğrula"
+          data-verify-url="https://ads.google.com"
+          onclick="toggle(this)">
+          <div class="check-box"></div>
+          <div class="check-label" style="font-size:12px;">Tamamlandı — doğrula</div>
         </div>
       </div>
 
-      <!-- UX -->
-      <div class="card">
+      <!-- GÖREV: 0 gösterim kampanyalar -->
+      <div class="card" style="border-left:3px solid var(--orange);">
         <div class="card-head">
           <div class="card-title-row">
-            <div class="card-icon purple">🎨</div>
+            <div class="card-icon orange">📊</div>
             <div>
-              <div class="card-name">UX Tasarımcı</div>
-              <div class="card-sub">Dönüşüm & kullanıcı deneyimi</div>
+              <div class="card-name">Kampanya Gösterim Sorunu</div>
+              <div class="card-sub"><span class="chip chip-orange" style="font-size:9px;">YÜKSEK</span> &nbsp;Reklam Ajanı</div>
             </div>
           </div>
-          <div class="status-dot yellow" title="Dikkat gerekiyor"></div>
+          <div class="status-dot red"></div>
         </div>
-        <div class="card-section">
-          <ul class="rec-list">
-            <li>İncelemeler sekmesini doldur — cr-reviews emaili aktif, henüz yorum yok; müşterilere 5 yıldız hatırlatması ekle</li>
-            <li>Stokta olmayan ürünleri cross-sell listesinden filtrele — güven kaybı yapıyor</li>
-            <li>GA4 JS Error (22 adet) — hangi sayfadan geldiğini tespit et → GTM → Özel Etiket</li>
-          </ul>
+        <ul class="rec-list" style="margin-bottom:12px;">
+          <li>Brand Protection + Nitro Kokteyl: 0 gösterim — teklif/bütçe düşük</li>
+          <li>N2Go Ürün: anahtar kelime grubu boş, önce ekle</li>
+          <li>Haftada 1.000 ₺ bütçeyi çalışan kampanyalara yoğunlaştır</li>
+        </ul>
+        <div class="check-item" style="margin:0;" data-deletable="true"
+          data-verify-title="Kampanya Gösterim Kontrolü"
+          data-verify-steps="Google Ads → Tüm kampanyalar görünümü|Brand Protection ve Nitro Kokteyl impression &gt; 0 olmalı|N2Go Ürün grubuna en az 5 anahtar kelime eklenmiş olmalı"
+          data-verify-url="https://ads.google.com"
+          onclick="toggle(this)">
+          <div class="check-box"></div>
+          <div class="check-label" style="font-size:12px;">Tamamlandı — doğrula</div>
         </div>
       </div>
 
-      <!-- İÇERİK -->
-      <div class="card">
+      <!-- GÖREV: SEO quick-wins -->
+      <div class="card" style="border-left:3px solid var(--blue);">
+        <div class="card-head">
+          <div class="card-title-row">
+            <div class="card-icon blue">🔍</div>
+            <div>
+              <div class="card-name">SEO Quick-Win Fırsatları</div>
+              <div class="card-sub"><span class="chip chip-orange" style="font-size:9px;">YÜKSEK</span> &nbsp;SEO Ajanı</div>
+            </div>
+          </div>
+          <div class="status-dot yellow"></div>
+        </div>
+        <ul class="rec-list" style="margin-bottom:12px;">
+          <li><strong>"bira fıçısı"</strong> — 410 gösterim, pozisyon 8 → meta title optimize et, ilk sayfaya taşı</li>
+          <li><strong>"sap fıçısı"</strong> — 299 gösterim, pozisyon 5 → ürün açıklamasına 2 kez ekle</li>
+          <li>/nitro-kahve/ kategori sayfasına yeni blog yazısından iç link ekle</li>
+        </ul>
+        <div class="check-item" style="margin:0;" data-deletable="true"
+          data-verify-title="SEO Quick-Win Doğrulama"
+          data-verify-steps="ficila.com.tr/urunler/bira-ficilar-ahsap-ficilar/ sayfasını aç|Meta title'da 'bira fıçısı' geçtiğini doğrula|GSC'de sayfa pozisyonunu 1 hafta sonra kontrol et"
+          data-verify-url="https://ficila.com.tr/urunler/bira-ficilar-ahsap-ficilar/"
+          onclick="toggle(this)">
+          <div class="check-box"></div>
+          <div class="check-label" style="font-size:12px;">Tamamlandı — doğrula</div>
+        </div>
+      </div>
+
+      <!-- GÖREV: İçerik takvimi -->
+      <div class="card" style="border-left:3px solid var(--green);">
         <div class="card-head">
           <div class="card-title-row">
             <div class="card-icon green">✍️</div>
             <div>
-              <div class="card-name">İçerik Yazarı</div>
-              <div class="card-sub">Blog · Ürün metinleri</div>
+              <div class="card-name">İçerik Takvimi — Nisan</div>
+              <div class="card-sub"><span class="chip chip-yellow" style="font-size:9px;">ORTA</span> &nbsp;İçerik Ajanı</div>
             </div>
           </div>
-          <div class="status-dot yellow" title="Dikkat gerekiyor"></div>
+          <div class="status-dot yellow"></div>
         </div>
-        <div class="card-section">
-          <ul class="rec-list">
-            <li><strong>N2 vs CO2: Hangisi Daha İyi?</strong> — B2B kafe/bar rehberi — 8 Nisan yayın hedefi</li>
-            <li>Nisan sezonlu: bahar piknik birası / açık hava bar kurulum rehberi</li>
-            <li>/ev-birasi/ ve /nitro-kahve/ kategori sayfalarına iç link desteği ver</li>
-          </ul>
+        <ul class="rec-list" style="margin-bottom:12px;">
+          <li>✅ N2 vs CO2 (31 Mar) — yayında</li>
+          <li>📅 <strong>Bahar piknik birası rehberi</strong> — 15 Nis hedefi (B2C + B2B)</li>
+          <li>📅 <strong>CO2 regülatör seçim rehberi</strong> — 22 Nis hedefi (/ev-birasi/ iç link)</li>
+          <li>Her yazı aktif reklam kampanyasını desteklemeli</li>
+        </ul>
+        <div class="check-item" style="margin:0;" data-deletable="true"
+          data-verify-title="İçerik Takvimi Kontrolü"
+          data-verify-steps="15 Nisan yazısı için konu onaylandı mı?|Blog Yaz komutunu kullanarak taslak oluştur|Yayınlandıktan sonra GSC'de index isteği gönder"
+          data-verify-url="https://ficila.com.tr/wp-admin/post-new.php"
+          onclick="toggle(this)">
+          <div class="check-box"></div>
+          <div class="check-label" style="font-size:12px;">Bahar piknik yazısı tamamlandı — doğrula</div>
         </div>
       </div>
 
-      <!-- ANALYTİCS -->
-      <div class="card">
+      <!-- GÖREV: GA4 JS Error -->
+      <div class="card" style="border-left:3px solid var(--yellow);">
         <div class="card-head">
           <div class="card-title-row">
             <div class="card-icon" style="background:var(--yellow-dim)">📊</div>
             <div>
-              <div class="card-name">Analytics & Data</div>
-              <div class="card-sub">Trafik · Dönüşüm · ROAS</div>
+              <div class="card-name">GA4 JS Error Tespiti</div>
+              <div class="card-sub"><span class="chip chip-yellow" style="font-size:9px;">ORTA</span> &nbsp;Analytics</div>
             </div>
           </div>
-          <div class="status-dot yellow" title="Takip gerekiyor"></div>
+          <div class="status-dot yellow"></div>
         </div>
-        <div class="card-section">
-          <ul class="rec-list">
-            <li>GA4 JS Error (22 adet) — GTM'de özel etiket kur → hata sayfasını tespit et</li>
-            <li>Nisan reklamları başladı — ilk 7 gün sonunda ROAS hesapla (kampanya / gelir)</li>
-            <li>Search Console × GA4 entegrasyonunu tamamla — organik dönüşüm izleme eksik</li>
-          </ul>
-        </div>
-      </div>
-
-    </div>
-  </section>
-
-  <!-- HAFTALIK PLAN -->
-  <section class="fade-up">
-    <div class="section-hdr">
-      <span class="section-title">Haftalık Çalışma Planı</span>
-    </div>
-    <div class="week-grid">
-
-      <!-- TAMAMLANANLAR -->
-      <div class="checklist-card">
-        <div style="font-size:12px; font-weight:600; color:var(--green); margin-bottom:14px; display:flex; align-items:center; gap:6px;">
-          <span>✓</span> Bu Ay Tamamlananlar
-        </div>
-        <div class="check-item checked" onclick="toggle(this)">
-          <div class="check-box">✓</div>
-          <div class="check-label">Month 1: AI crawlers, redirects, alt texts, reviews</div>
-        </div>
-        <div class="check-item checked" onclick="toggle(this)">
-          <div class="check-box">✓</div>
-          <div class="check-label">Month 2: OG tags, noindex, hreflang, slug düzeltme</div>
-        </div>
-        <div class="check-item checked" onclick="toggle(this)">
-          <div class="check-box">✓</div>
-          <div class="check-label">Month 3: OG image, ürün açıklamaları, blog redirects</div>
-        </div>
-        <div class="check-item checked" onclick="toggle(this)">
-          <div class="check-box">✓</div>
-          <div class="check-label">AggregateRating schema (WPCode snippet)</div>
-        </div>
-        <div class="check-item checked" onclick="toggle(this)">
-          <div class="check-box">✓</div>
-          <div class="check-label">Nisan kampanyası hazırlandı (3 Google + 2 Meta)</div>
-        </div>
-        <div class="check-item checked" onclick="toggle(this)">
-          <div class="check-box">✓</div>
-          <div class="check-label">Meta API bağlandı (act_875332702913852)</div>
-        </div>
-        <div class="check-item checked" onclick="toggle(this)">
-          <div class="check-box">✓</div>
-          <div class="check-label">Çarşamba otomatik optimizasyon trigger'ı kuruldu</div>
-        </div>
-        <div class="check-item checked" onclick="toggle(this)">
-          <div class="check-box">✓</div>
-          <div class="check-label">Meta Pixel kuruldu (ID: 1137510490037550, WPCode)</div>
-        </div>
-        <div class="check-item checked" onclick="toggle(this)">
-          <div class="check-box">✓</div>
-          <div class="check-label">GTM doğrulandı (GTM-T69WRFL aktif)</div>
-        </div>
-        <div class="check-item checked" onclick="toggle(this)">
-          <div class="check-box">✓</div>
-          <div class="check-label">robots.txt AI crawler bloğu kaldırıldı (Cloudflare)</div>
-        </div>
-        <div class="check-item checked" onclick="toggle(this)">
-          <div class="check-box">✓</div>
-          <div class="check-label">Checkout popup kaldırıldı (#kadence-conversion-6584 CSS)</div>
-        </div>
-        <div class="check-item checked" onclick="toggle(this)">
-          <div class="check-box">✓</div>
-          <div class="check-label">WooCommerce API bağlandı (Satış Ajanı aktif)</div>
-        </div>
-        <div class="check-item checked" onclick="toggle(this)">
-          <div class="check-box">✓</div>
-          <div class="check-label">Meta API token yenilendi (son: 26 Mayıs 2026)</div>
-        </div>
-        <div class="check-item checked" onclick="toggle(this)">
-          <div class="check-box">✓</div>
-          <div class="check-label">Meta kampanya yapısı API ile oluşturuldu (2 kampanya · 4 ad set · 4 reklam)</div>
-        </div>
-        <div class="check-item checked" onclick="toggle(this)">
-          <div class="check-box">✓</div>
-          <div class="check-label">NEO Meta app Live moda alındı — creative API çalışıyor</div>
-        </div>
-        <div class="check-item checked" onclick="toggle(this)">
-          <div class="check-box">✓</div>
-          <div class="check-label">4 Google MCP server aktif ve test edildi (Sheets, Ads, Analytics, GSC)</div>
-        </div>
-        <div class="check-item checked" onclick="toggle(this)">
-          <div class="check-box">✓</div>
-          <div class="check-label">Kredi kartı default ödeme yöntemi yapıldı</div>
-        </div>
-        <div class="check-item checked" onclick="toggle(this)">
-          <div class="check-box">✓</div>
-          <div class="check-label">Google Ads + Meta kampanyaları aktive edildi — yayında</div>
-        </div>
-        <div class="check-item checked" onclick="toggle(this)">
-          <div class="check-box">✓</div>
-          <div class="check-label">Komuta dashboard interaktif — Meta API + Google Ads proxy canlı veri</div>
-        </div>
-        <div class="check-item checked" onclick="toggle(this)">
-          <div class="check-box">✓</div>
-          <div class="check-label">Merchant Center: fiziksel mağaza kaldırıldı, image_link düzeltildi</div>
-        </div>
-        <div class="check-item checked" onclick="toggle(this)">
-          <div class="check-box">✓</div>
-          <div class="check-label">GA4 e-ticaret tracking doğrulandı — purchase eventi geliyor</div>
-        </div>
-      </div>
-
-      <!-- AÇIK GÖREVLER -->
-      <div class="checklist-card">
-        <div style="font-size:12px; font-weight:600; color:var(--yellow); margin-bottom:14px; display:flex; align-items:center; gap:6px;">
-          <span>→</span> Açık Görevler
-        </div>
-        <div class="check-item" data-deletable="true"
-          data-verify-title="CPC Optimizasyonu Doğrulama"
-          data-verify-steps="Google Ads'e gir → Nitro Kahve kampanyasını aç|Anahtar kelime tekliflerini kontrol et — her biri ≤5 ₺ olmalı|'Tümünü Yenile'ye bas → KPI kartında CPC &lt;5 ₺ göründüğünü doğrula"
-          data-verify-url="https://ads.google.com"
-          onclick="toggle(this)">
-          <div class="check-box"></div>
-          <div class="check-label">Google Ads Nitro Kahve CPC optimize et — 10.24 ₺ → hedef &lt;5 ₺</div>
-          <span class="check-priority"><span class="chip chip-red">KRİTİK</span></span>
-        </div>
-        <div class="check-item checked" data-deletable="true"
-          data-verify-title="Blog Yazısı Yayın Doğrulama"
-          data-verify-steps="ficila.com.tr/nitro-kahve/ adresine git|N2 vs CO2 yazısının listede göründüğünü kontrol et|Yazıyı aç → URL /nitro-kahve/n2-co2-fark-kafe-bar-rehberi/ olmalı"
-          data-verify-url="https://ficila.com.tr/nitro-kahve/"
-          onclick="toggle(this)">
-          <div class="check-box">✓</div>
-          <div class="check-label">N2 vs CO2 blog yazısı — B2B kafe/bar rehberi (8 Nis yayın hedefi)</div>
-          <span class="check-priority"><span class="chip chip-orange">YÜKSEK</span></span>
-        </div>
-        <div class="check-item" data-deletable="true"
-          data-verify-title="Kampanya Gösterim Kontrolü"
-          data-verify-steps="Google Ads'e gir → Tüm kampanyalar görünümü|Brand Protection ve Nitro Kokteyl satırlarını bul|İmpression sütununun 0'dan büyük olduğunu doğrula"
-          data-verify-url="https://ads.google.com"
-          onclick="toggle(this)">
-          <div class="check-box"></div>
-          <div class="check-label">Brand Protection + Nitro Kokteyl kampanyaları: 0 gösterim — bütçe/teklif kontrol</div>
-          <span class="check-priority"><span class="chip chip-orange">YÜKSEK</span></span>
-        </div>
-        <div class="check-item" data-deletable="true"
-          data-verify-title="Merchant Center Feed Kontrolü"
-          data-verify-steps="Google Merchant Center'a gir → Ürünler → Feed durumu|Hata sayısının 0 olduğunu doğrula|Onaylanan ürün sayısının değişmediğini kontrol et"
-          data-verify-url="https://merchants.google.com"
-          onclick="toggle(this)">
-          <div class="check-box"></div>
-          <div class="check-label">Merchant Center envanter hatasının temizlendiğini doğrula (24 saat)</div>
-          <span class="check-priority"><span class="chip chip-yellow">ORTA</span></span>
-        </div>
-        <div class="check-item" data-deletable="true"
+        <ul class="rec-list" style="margin-bottom:12px;">
+          <li>22 adet JS Error eventi — hangi sayfadan geldiği bilinmiyor</li>
+          <li>GTM'de özel hata etiketi kur → sayfa URL'sini yakala</li>
+          <li>Search Console × GA4 entegrasyonunu tamamla</li>
+        </ul>
+        <div class="check-item" style="margin:0;" data-deletable="true"
           data-verify-title="GA4 JS Error Tespiti"
-          data-verify-steps="GA4 → Raporlar → Olaylar → 'js_error' filtrele|Hangi sayfalarda oluştuğunu not et|GTM'de özel etiket kurulduğunu doğrula"
+          data-verify-steps="GA4 → Raporlar → Olaylar → js_error filtrele|Hangi sayfalarda oluştuğunu not et|GTM özel etiket kurulduğunu doğrula"
           data-verify-url="https://analytics.google.com"
           onclick="toggle(this)">
           <div class="check-box"></div>
-          <div class="check-label">GA4 JS Error eventleri — hangi sayfadan geldiğini tespit et (22 adet)</div>
-          <span class="check-priority"><span class="chip chip-yellow">ORTA</span></span>
+          <div class="check-label" style="font-size:12px;">Tamamlandı — doğrula</div>
         </div>
-        <div class="check-item" data-deletable="true"
-          data-verify-title="Meta Token Yenileme"
-          data-verify-steps="developers.facebook.com/tools/explorer adresine git|NEO app'i seç → izinleri kontrol et → Generate Token|Yeni token'ı dashboard META_TOKEN değişkenine yapıştır|'Tümünü Yenile'ye bas → Meta verisinin geldiğini doğrula"
-          data-verify-url="https://developers.facebook.com/tools/explorer"
-          onclick="toggle(this)">
-          <div class="check-box"></div>
-          <div class="check-label">Meta token yenile — son tarih: 28 Mayıs 2026</div>
-          <span class="check-priority"><span class="chip chip-yellow">ORTA</span></span>
+      </div>
+
+      <!-- GÖREV: Stok + Merchant -->
+      <div class="card" style="border-left:3px solid var(--muted);">
+        <div class="card-head">
+          <div class="card-title-row">
+            <div class="card-icon purple">🛒</div>
+            <div>
+              <div class="card-name">Stok & Merchant Center</div>
+              <div class="card-sub"><span class="chip chip-yellow" style="font-size:9px;">ORTA</span> &nbsp;UX + Ads</div>
+            </div>
+          </div>
+          <div class="status-dot yellow"></div>
         </div>
-        <div class="check-item" data-deletable="true"
-          data-verify-title="Stok Yenileme Kontrolü"
-          data-verify-steps="WooCommerce Admin → Ürünler → KegKing Apollo 30L'i bul|Stok durumunu 'Stokta Var' olarak güncelle|CO2 Regülatör için aynı işlemi tekrarla|Ürün sayfalarının 'Stokta Yok' göstermediğini doğrula"
+        <ul class="rec-list" style="margin-bottom:12px;">
+          <li>KegKing Apollo 30L + CO2 Regülatör stokta yok — yüksek değerli ürünler</li>
+          <li>Merchant Center feed hatası — 24 saat içinde temizlenmeli</li>
+          <li>Stokta olmayan ürünleri cross-sell listesinden filtrele</li>
+        </ul>
+        <div class="check-item" style="margin:0;" data-deletable="true"
+          data-verify-title="Stok & Merchant Kontrolü"
+          data-verify-steps="WC Admin → KegKing Apollo 30L stok güncellemesi|CO2 Regülatör stok güncellemesi|Merchant Center → Ürünler → Hata sayısı 0 olmalı"
           data-verify-url="https://ficila.com.tr/wp-admin/edit.php?post_type=product"
           onclick="toggle(this)">
           <div class="check-box"></div>
-          <div class="check-label">KegKing Apollo 30L + CO2 Regülatör stok yenileme</div>
-          <span class="check-priority"><span class="chip chip-yellow">ORTA</span></span>
+          <div class="check-label" style="font-size:12px;">Tamamlandı — doğrula</div>
         </div>
       </div>
 
     </div>
-  </section>
 
-  <!-- CLAUDE KOMUTLAR -->
-  <section class="fade-up">
-    <div class="section-hdr">
-      <span class="section-title">Claude ile Hızlı Çalış</span>
-      <span style="font-size:11px; color:var(--dim)">Butona tıkla → metni kopyala → Claude'a yapıştır</span>
-    </div>
-    <div class="commands-grid">
-      <button class="cmd-btn" onclick="copyCmd('ficila.com.tr için bu haftaki SEO durumunu analiz et ve gelecek hafta için öncelikli aksiyonları listele')">
-        <span class="cmd-emoji">🔍</span>
-        <div class="cmd-name">SEO Analizi</div>
-        <div class="cmd-desc">Organik trafik durumu, sıralama değişimleri, teknik sorunlar</div>
-        <span class="cmd-code">seo-analysis</span>
+    <!-- TAMAMLANANLAR — katlanabilir -->
+    <div style="margin-top:20px;">
+      <button onclick="toggleArchive(this)" style="background:none;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-size:11px;padding:6px 14px;cursor:pointer;display:flex;align-items:center;gap:6px;font-family:'Open Sans',sans-serif;">
+        <span id="archive-arrow">▶</span> Tamamlananlar Arşivi (4 Ay)
       </button>
-      <button class="cmd-btn" onclick="copyCmd('ficila Meta ve Google Ads bu haftaki verilerle optimize et, KPI alarmlarını kontrol et')">
-        <span class="cmd-emoji">📢</span>
-        <div class="cmd-name">Reklam Optimize</div>
-        <div class="cmd-desc">Google Ads + Meta haftalık KPI analizi ve optimizasyon önerileri</div>
-        <span class="cmd-code">reklam</span>
-      </button>
-      <button class="cmd-btn" onclick="copyCmd('ficila için nitro kokteyl konusunda SEO uyumlu Türkçe blog yazısı yaz, bar ve kafe sahiplerine hitap etsin')">
-        <span class="cmd-emoji">✍️</span>
-        <div class="cmd-name">Blog Yaz</div>
-        <div class="cmd-desc">Nitro kokteyl rehber yazısı — B2B kafe/bar kitlesi için</div>
-        <span class="cmd-code">blog-content-writer</span>
-      </button>
-      <button class="cmd-btn" onclick="copyCmd('ficila.com.tr UX sorunlarını analiz et, özellikle mobil CTA ve checkout akışını değerlendir')">
-        <span class="cmd-emoji">🎨</span>
-        <div class="cmd-name">UX İncele</div>
-        <div class="cmd-desc">Mobil deneyim, checkout akışı, dönüşüm engelleri</div>
-        <span class="cmd-code">ecommerce-ux-designer</span>
-      </button>
-      <button class="cmd-btn" onclick="copyCmd('ficila GTM ve Meta Pixel kurulumunu adım adım yapalım')">
-        <span class="cmd-emoji">📡</span>
-        <div class="cmd-name">GTM + Pixel Kur</div>
-        <div class="cmd-desc">Dönüşüm takibi için GTM ve Meta Pixel kurulum rehberi</div>
-        <span class="cmd-code">analytics setup</span>
-      </button>
-      <button class="cmd-btn" onclick="copyCmd('ficila haftalık rapor güncelle')">
-        <span class="cmd-emoji">🔄</span>
-        <div class="cmd-name">Raporu Güncelle</div>
-        <div class="cmd-desc">Bu dashboard'u tüm ajanlarla güncelle ve yeni haftaya hazırla</div>
-        <span class="cmd-code">ficila-haftalik-rapor</span>
-      </button>
+      <div id="archive-block" style="display:none;margin-top:12px;">
+        <div class="checklist-card">
+          <div class="check-item checked"><div class="check-box">✓</div><div class="check-label"><strong>Month 1:</strong> AI crawlers izni, 301 redirectler, 420 görsel alt text, cr-reviews kurulumu</div></div>
+          <div class="check-item checked"><div class="check-box">✓</div><div class="check-label"><strong>Month 2:</strong> OG meta tags, /kategorisiz/ noindex, hreflang eklendi, /surec/ slug düzeltme</div></div>
+          <div class="check-item checked"><div class="check-box">✓</div><div class="check-label"><strong>Month 3:</strong> OG default image (Canva), 5 ürün açıklaması genişletildi, İngilizce blog 301'leri</div></div>
+          <div class="check-item checked"><div class="check-box">✓</div><div class="check-label"><strong>Month 4:</strong> AggregateRating schema, Nisan kampanyaları, Meta API + Pixel + GTM, canlı dashboard</div></div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -1253,12 +1146,13 @@ footer {
 
 <!-- FOOTER -->
 <footer>
-  <div>Son güncelleme: <strong>28 Mart 2026</strong> · Sonraki: <strong>1 Nisan 2026</strong> (Çarşamba 08:00)</div>
+  <div id="footer-ts" style="color:var(--dim);font-size:11px;">Veriler canlı · Son yenileme: <span id="footer-last-refresh">—</span></div>
   <div class="footer-links">
-    <span class="footer-link" onclick="copyCmd('ficila haftalık rapor güncelle')">Raporu Güncelle</span>
-    <a class="footer-link" href="https://claude.ai/code/scheduled/trig_01XbQg7nPpkghBuv8o5xBRUW" target="_blank">Çarşamba Trigger</a>
+    <a class="footer-link" href="https://ads.google.com" target="_blank">Google Ads</a>
     <a class="footer-link" href="https://adsmanager.facebook.com/adsmanager/manage/campaigns?act=875332702913852" target="_blank">Meta Ads Manager</a>
-    <span class="footer-link" style="color:var(--yellow)">⚠️ Meta token: 26 Mayıs 2026</span>
+    <a class="footer-link" href="https://analytics.google.com" target="_blank">GA4</a>
+    <a class="footer-link" href="https://search.google.com/search-console" target="_blank">GSC</a>
+    <span class="footer-link" id="footer-token-warn" style="color:var(--yellow)">⏰ Meta token: 28 May 2026</span>
   </div>
 </footer>
 
@@ -1392,6 +1286,36 @@ function clearNotes() {
     document.getElementById('notes-dot').classList.add('saved');
     document.getElementById('notes-status').textContent = 'kaydedildi ' + (ts || '');
     document.getElementById('notes-ts').textContent = ts ? 'Son kay\u0131t: ' + ts : '';
+  }
+})();
+
+// ── ARŞİV TOGGLE ──
+function toggleArchive(btn) {
+  var block = document.getElementById('archive-block');
+  var arrow = document.getElementById('archive-arrow');
+  if (!block) return;
+  var open = block.style.display !== 'none';
+  block.style.display = open ? 'none' : 'block';
+  if (arrow) arrow.textContent = open ? '▶' : '▼';
+}
+
+// ── TOKEN UYARI RENK (R4) ──
+(function() {
+  var tokenDate = new Date('2026-05-28');
+  var now = new Date();
+  var days = Math.round((tokenDate - now) / 86400000);
+  var item = document.getElementById('kritik-token-item');
+  var warn = document.getElementById('footer-token-warn');
+  if (item) {
+    if (days < 14) {
+      item.className = 'alert-item';       // kırmızı
+      if (warn) warn.style.color = 'var(--red)';
+    } else if (days < 30) {
+      item.className = 'alert-item yellow'; // sarı
+    } else {
+      item.className = 'alert-item green';  // mavi/yeşil — sorun yok
+      if (warn) warn.style.color = 'var(--muted)';
+    }
   }
 })();
 
@@ -1564,6 +1488,7 @@ function makeMsg(text, isErr) {
 function updateLiveBadge() {
   var ts = new Date().toLocaleTimeString('tr-TR', {hour:'2-digit', minute:'2-digit'});
   setText('live-ts', 'Son: ' + ts);
+  setText('footer-last-refresh', ts);
   var badge = document.getElementById('live-section-badge');
   if (badge) { badge.textContent = ts + ' güncellendi'; badge.className = 'chip chip-green'; }
 }
@@ -1716,6 +1641,10 @@ function loadProxy() {
       }
       savePrev('gads-cpc', avgCpc); showDelta('kpi-gads-cpc-delta', 'gads-cpc', avgCpc);
       savePrev('gads-spend', totalSpend);
+      _gadsSpend7d = totalSpend; tryUpdateRoas();
+      // Hero CPC güncelle
+      var hCpc = document.getElementById('hero-cpc');
+      if (hCpc) { hCpc.textContent = avgCpc > 0 ? fmtTL(avgCpc) : '—'; hCpc.style.color = avgCpc > 8 ? 'var(--red)' : avgCpc > 5 ? 'var(--yellow)' : 'var(--green)'; }
       setText('kpi-gads-cpc-target', 'Hedef: <5 \u20ba \u00b7 Harcama: ' + fmtTL(totalSpend));
       // Sync kritik uyarılar
       var kritikCpcVal = document.getElementById('kritik-cpc-val');
@@ -1960,9 +1889,13 @@ function loadKpis() {
     .then(function(d) {
       if (d.error) { setText('kpi-sales', '—'); setText('kpi-sales-target', d.error.substring(0,40)); return; }
       var gross = d.gross_sales || 0;
+      _wcGross = gross; tryUpdateRoas();
       savePrev('sales', gross); showDelta('kpi-sales-delta', 'sales', gross);
       setText('kpi-sales', fmtTL(gross));
       setText('kpi-sales-target', d.orders + ' sipariş · Net: ' + fmtTL(d.net_revenue));
+      // Hero güncelle
+      var hSales = document.getElementById('hero-sales');
+      if (hSales) hSales.textContent = fmtTL(gross);
       var pct = Math.min(100, Math.round(gross / 100000 * 100));
       var bar = document.getElementById('kpi-sales-bar');
       if (bar) bar.style.width = pct + '%';
@@ -1981,8 +1914,10 @@ function loadKpis() {
         return;
       }
       savePrev('organic', d.organic_sessions || 0); showDelta('kpi-organic-delta', 'organic', d.organic_sessions || 0);
-      setText('kpi-organic', String(d.organic_sessions || 0));
-      setText('kpi-organic-target', 'Organik arama · %' + (d.organic_pct||0) + ' pay · Toplam: ' + (d.total_sessions||0));
+      setText('kpi-organic', fmtN(d.organic_sessions || 0));
+      setText('kpi-organic-target', 'Organik arama · %' + (d.organic_pct||0) + ' pay · Toplam: ' + fmtN(d.total_sessions||0));
+      var hOrg = document.getElementById('hero-organic');
+      if (hOrg) hOrg.textContent = fmtN(d.organic_sessions || 0) + ' oturum';
       var orgPct = Math.min(100, Math.round((d.organic_pct||0) * 2));
       var orgBar = document.getElementById('kpi-organic-bar');
       if (orgBar) orgBar.style.width = orgPct + '%';
@@ -1998,21 +1933,74 @@ function loadKpis() {
       setText('kpi-shopping', '—'); setText('kpi-shopping-target', 'Proxy çalışmıyor');
     });
 
-  // GSC → Organik CTR
+  // GSC → Organik CTR + Pozisyon
   fetchT(PROXY_BASE + '/gsc' + (PROXY_KEY ? '?key='+PROXY_KEY : ''), 10000)
     .then(function(r) { return r.json(); })
     .then(function(d) {
-      if (d.error) { setText('kpi-ctr', '—'); setText('kpi-ctr-target', d.error.substring(0,40)); return; }
+      if (d.error) {
+        setText('kpi-ctr', '—'); setText('kpi-ctr-target', d.error.substring(0,40));
+        setText('kpi-position', '—'); setText('kpi-position-target', d.error.substring(0,40));
+        return;
+      }
       savePrev('ctr', d.ctr || 0); showDelta('kpi-ctr-delta', 'ctr', d.ctr || 0);
       setText('kpi-ctr', '%' + (d.ctr || 0));
-      setText('kpi-ctr-target', d.clicks + ' tık · ' + d.impressions + ' gösterim · Pos: ' + d.position);
+      setText('kpi-ctr-target', d.clicks + ' tık · ' + fmtN(d.impressions) + ' gösterim');
       var ctr = d.ctr || 0;
       var ctrBar = document.getElementById('kpi-ctr-bar');
       if (ctrBar) ctrBar.style.width = Math.min(100, Math.round(ctr / 5 * 100)) + '%';
-      var el = document.getElementById('kpi-ctr');
-      if (el) el.style.color = ctr >= 5 ? 'var(--green)' : ctr >= 2 ? 'var(--yellow)' : 'var(--red)';
+      var ctrEl = document.getElementById('kpi-ctr');
+      if (ctrEl) ctrEl.style.color = ctr >= 5 ? 'var(--green)' : ctr >= 2 ? 'var(--yellow)' : 'var(--red)';
+      // Pozisyon KPI (düşük = iyi, hedef <10)
+      var pos = d.position || 0;
+      savePrev('position', pos);
+      // Position delta: düşüş = iyileşme, showDelta'yı ters oku
+      var posEl = document.getElementById('kpi-position');
+      if (posEl) {
+        posEl.childNodes[0].textContent = pos > 0 ? fmtN(pos, 1) : '—';
+        posEl.style.color = pos > 0 && pos <= 5 ? 'var(--green)' : pos <= 10 ? 'var(--yellow)' : 'var(--red)';
+      }
+      // Delta için: pozisyon düştüyse (iyileştiyse) yeşil göster — özel hesap
+      var prevPos = parseFloat(localStorage.getItem('ficila-prev-position'));
+      var deltaEl = document.getElementById('kpi-position-delta');
+      if (deltaEl && !isNaN(prevPos) && prevPos > 0 && pos > 0) {
+        var pd = prevPos - pos; // pozitif = iyileşme
+        deltaEl.textContent = (pd >= 0 ? '↑' : '↓') + fmtN(Math.abs(pd), 1);
+        deltaEl.className = 'kpi-delta ' + (pd > 0 ? 'up' : pd < 0 ? 'down' : 'flat');
+        deltaEl.title = 'Geçen hafta: ' + fmtN(prevPos, 1) + ' → Bu hafta: ' + fmtN(pos, 1);
+      }
+      localStorage.setItem('ficila-wk-position', _weekKey());
+      localStorage.setItem('ficila-kv-position', String(pos));
+      setText('kpi-position-target', 'Hedef: <10 · GSC cari ay');
+      var posBar = document.getElementById('kpi-position-bar');
+      if (posBar) posBar.style.width = pos > 0 ? Math.min(100, Math.round((20 - Math.min(pos,20)) / 20 * 100)) + '%' : '0%';
+      // Hero güncelle
+      var hOrganic = document.getElementById('hero-organic');
+      if (hOrganic) hOrganic.textContent = fmtN(d.clicks) + ' tık';
+      // KPI chip
+      var chip = document.getElementById('kpi-period-chip');
+      if (chip && d.period) chip.textContent = d.period;
     })
-    .catch(function() { setText('kpi-ctr', '—'); setText('kpi-ctr-target', 'Proxy çalışmıyor'); });
+    .catch(function() {
+      setText('kpi-ctr', '—'); setText('kpi-ctr-target', 'Proxy çalışmıyor');
+      setText('kpi-position', '—');
+    });
+}
+
+// ── ROAS HESAPLAMA (WC satış ÷ gads spend) ──
+var _wcGross = 0, _gadsSpend7d = 0;
+function tryUpdateRoas() {
+  if (_wcGross > 0 && _gadsSpend7d > 0) {
+    var roas = _wcGross / _gadsSpend7d;
+    savePrev('roas', roas); showDelta('kpi-roas-delta', 'roas', roas);
+    var roasEl = document.getElementById('kpi-roas');
+    if (roasEl) {
+      roasEl.childNodes[0].textContent = fmtN(roas, 1) + 'x';
+      roasEl.style.color = roas >= 4 ? 'var(--green)' : roas >= 2 ? 'var(--yellow)' : 'var(--red)';
+    }
+    setText('kpi-roas-target', fmtTL(_wcGross) + ' satış ÷ ' + fmtTL(_gadsSpend7d) + ' harcama');
+    var roasBar = document.getElementById('kpi-roas-bar');
+    if (roasBar) roasBar.style.width = Math.min(100, Math.round(roas / 10 * 100)) + '%';
+  }
 }
 
 function loadAllLive() { loadMeta(); loadProxy(); loadSheets(); loadSocial(); loadKpis(); }
