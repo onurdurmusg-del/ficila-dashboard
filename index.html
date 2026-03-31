@@ -740,13 +740,23 @@ footer {
   </div>
 </nav>
 
+<!-- LIVE DATA STRIP — topnav'ın hemen altında -->
+<div class="live-strip">
+  <span style="color:var(--dim);font-size:10px;text-transform:uppercase;letter-spacing:.5px;flex-shrink:0;">Canlı Veri</span>
+  <div class="live-src"><span class="live-dot spin" id="dot-meta"></span><span id="lbl-meta">Meta API bekleniyor…</span></div>
+  <div class="live-src"><span class="live-dot spin" id="dot-proxy"></span><span id="lbl-proxy">Google Ads Proxy bekleniyor…</span></div>
+  <div class="live-src"><span class="live-dot spin" id="dot-sheets"></span><span id="lbl-sheets">Sheets bekleniyor…</span></div>
+  <span class="live-ts" id="live-ts"></span>
+  <button class="live-refresh" onclick="loadAllLive()">↻ Yenile</button>
+</div>
+
 <!-- HERO -->
 <header class="hero">
   <div class="hero-eyebrow">
-    <span class="chip chip-blue">Hafta 14 · 29 Mart 2026</span>
+    <span class="chip chip-blue" id="hero-week-chip">Hafta … · …</span>
   </div>
   <h1>Fıçıla <em>Yönetim Paneli</em></h1>
-  <p class="hero-sub">4 ajan paralel çalışıyor — SEO, Reklam, UX, İçerik & Analytics. Her Çarşamba güncellenir.</p>
+  <p class="hero-sub">4 ajan canlı izliyor — SEO, Reklam, UX, İçerik & Analytics. Veriler otomatik güncellenir.</p>
   <div class="stats-row">
     <div class="stat-item">
       <div class="stat-num" style="color:var(--blue)">1.435</div>
@@ -772,15 +782,6 @@ footer {
 </header>
 
 
-<!-- LIVE DATA STRIP -->
-<div class="live-strip">
-  <span style="color:var(--dim);font-size:10px;text-transform:uppercase;letter-spacing:.5px;flex-shrink:0;">Canlı Veri</span>
-  <div class="live-src"><span class="live-dot spin" id="dot-meta"></span><span id="lbl-meta">Meta API bekleniyor…</span></div>
-  <div class="live-src"><span class="live-dot spin" id="dot-proxy"></span><span id="lbl-proxy">Google Ads Proxy bekleniyor…</span></div>
-  <div class="live-src"><span class="live-dot spin" id="dot-sheets"></span><span id="lbl-sheets">Sheets bekleniyor…</span></div>
-  <span class="live-ts" id="live-ts"></span>
-  <button class="live-refresh" onclick="loadAllLive()">↻ Yenile</button>
-</div>
 
 <main>
 
@@ -1278,11 +1279,6 @@ footer {
 </div>
 
 <script>
-// Date
-const d = new Date();
-document.getElementById('current-date').textContent =
-  d.toLocaleDateString('tr-TR', {day:'numeric', month:'long', year:'numeric'});
-
 // ── VERIFY DRAWER ──
 let _pendingEl = null;
 
@@ -1428,16 +1424,41 @@ var SHEET_ID   = '14K6A1QrCSp-ndCwSiXZ4uIHG1CAQsAXgw8cF_f3XAJg';
 var PROXY_BASE = 'https://ficila-proxy.onrender.com';
 var PROXY_KEY  = 'ficila2026';
 
-// ── WoW DELTA ──
-// Stores previous values; shows % change on next session (>1h gap)
+// ── ISO HAFTA NUMARASI ──
+function isoWeek(d) {
+  var dt = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  var day = dt.getUTCDay() || 7;
+  dt.setUTCDate(dt.getUTCDate() + 4 - day);
+  var y1 = new Date(Date.UTC(dt.getUTCFullYear(), 0, 1));
+  return { week: Math.ceil(((dt - y1) / 86400000 + 1) / 7), year: dt.getUTCFullYear() };
+}
+// Hero chip + topnav tarih güncelle
+(function() {
+  var now = new Date();
+  var iw = isoWeek(now);
+  var dateStr = now.toLocaleDateString('tr-TR', {day:'numeric', month:'long', year:'numeric'});
+  var chip = document.getElementById('hero-week-chip');
+  if (chip) chip.textContent = 'Hafta ' + iw.week + ' · ' + dateStr;
+  var topDate = document.getElementById('current-date');
+  if (topDate) topDate.textContent = 'Hafta ' + iw.week + ' · ' + dateStr;
+})();
+
+// ── HAFTALIK DELTA ──
+// Her hafta başında bir önceki haftanın verisi "prev" olarak saklanır.
+// Böylece KPI kartları o haftanın gerçek değişimini gösterir.
+function _weekKey() {
+  var iw = isoWeek(new Date());
+  return iw.year + '-W' + iw.week;
+}
 function savePrev(key, val) {
-  var now = Date.now();
-  var lastTs = parseInt(localStorage.getItem('ficila-kv-ts-' + key) || '0');
-  if (now - lastTs > 3600000) { // >1h → promote current to prev
+  var wk = _weekKey();
+  var storedWk = localStorage.getItem('ficila-wk-' + key);
+  if (storedWk && storedWk !== wk) {
+    // Yeni hafta → mevcut değeri "önceki hafta" olarak kaydet
     var cur = localStorage.getItem('ficila-kv-' + key);
     if (cur !== null) localStorage.setItem('ficila-prev-' + key, cur);
-    localStorage.setItem('ficila-kv-ts-' + key, String(now));
   }
+  localStorage.setItem('ficila-wk-' + key, wk);
   localStorage.setItem('ficila-kv-' + key, String(val));
 }
 function showDelta(spanId, key, currentVal) {
@@ -1448,9 +1469,9 @@ function showDelta(spanId, key, currentVal) {
   if (isNaN(prev) || isNaN(cur) || prev === 0) { el.textContent = ''; el.className = 'kpi-delta'; return; }
   var delta = (cur - prev) / Math.abs(prev) * 100;
   var sign = delta >= 0 ? '+' : '';
-  el.textContent = sign + delta.toFixed(1) + '%';
+  el.textContent = sign + fmtN(delta, 1) + '%';
   el.className = 'kpi-delta ' + (delta > 1 ? 'up' : delta < -1 ? 'down' : 'flat');
-  el.title = 'Önceki: ' + prev.toFixed(0) + ' → Şimdi: ' + cur.toFixed(0) + ' (önceki yenilemeye göre)';
+  el.title = 'Geçen hafta: ' + fmtN(prev, 0) + ' → Bu hafta: ' + fmtN(cur, 0);
 }
 
 // ── helpers ──
@@ -1467,7 +1488,10 @@ function setDot(id, state, label) {
 function fmtN(n, dec) {
   var v = parseFloat(n);
   if (isNaN(v)) return '\u2014';
-  return v.toFixed(dec !== undefined ? dec : 0).replace('.', ',');
+  var fixed = v.toFixed(dec !== undefined ? dec : 0);
+  var parts = fixed.split('.');
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  return parts.length > 1 ? parts[0] + ',' + parts[1] : parts[0];
 }
 function fmtTL(n) {
   var v = parseFloat(n);
