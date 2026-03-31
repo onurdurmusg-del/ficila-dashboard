@@ -1,0 +1,1890 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fıçıla — Yönetim Paneli</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@400;600;700&family=Open+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #080a0e;
+  --surface: #0f1117;
+  --surface2: #161b26;
+  --surface3: #1d2333;
+  --border: #252b3d;
+  --border2: #303a56;
+  --gold: #ffd500;
+  --gold-dim: rgba(255,213,0,0.09);
+  --gold-mid: rgba(255,213,0,0.22);
+  --blue: #4f8ef7;
+  --blue-dim: rgba(79,142,247,0.12);
+  --green: #3ecf8e;
+  --green-dim: rgba(62,207,142,0.1);
+  --orange: #f97316;
+  --orange-dim: rgba(249,115,22,0.1);
+  --red: #f43f5e;
+  --red-dim: rgba(244,63,94,0.1);
+  --purple: #a78bfa;
+  --purple-dim: rgba(167,139,250,0.1);
+  --yellow: #fbbf24;
+  --yellow-dim: rgba(251,191,36,0.1);
+  --text: #e8edf5;
+  --muted: #8090a8;
+  --dim: #48526a;
+  --r: 10px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Open Sans', sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+h1, h2, h3, .stat-num, .kpi-value, .hero h1 {
+  font-family: 'Roboto Slab', serif;
+}
+
+/* ── SCANLINE OVERLAY ── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+  pointer-events: none;
+  z-index: 999;
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+@keyframes glow {
+  0%, 100% { box-shadow: 0 0 8px rgba(79,142,247,0.3); }
+  50%       { box-shadow: 0 0 20px rgba(79,142,247,0.6); }
+}
+
+.fade-up { animation: fadeUp 0.5s ease both; }
+.fade-up:nth-child(1) { animation-delay: 0.05s; }
+.fade-up:nth-child(2) { animation-delay: 0.10s; }
+.fade-up:nth-child(3) { animation-delay: 0.15s; }
+.fade-up:nth-child(4) { animation-delay: 0.20s; }
+.fade-up:nth-child(5) { animation-delay: 0.25s; }
+.fade-up:nth-child(6) { animation-delay: 0.30s; }
+
+/* ── TOP NAV ── */
+.topnav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: #000000;
+  border-bottom: 2px solid var(--gold);
+  padding: 0 40px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.topnav-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.topnav-logo {
+  width: 30px; height: 30px;
+  background: var(--gold);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: #000;
+  font-family: 'Roboto Slab', serif;
+}
+.topnav-name { font-weight: 600; font-size: 14px; letter-spacing: -0.2px; font-family: 'Roboto Slab', serif; }
+.topnav-name span { color: var(--gold); }
+.topnav-right { display: flex; align-items: center; gap: 12px; }
+
+/* ── REFRESH BUTTON ── */
+.btn-refresh-all {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--gold);
+  color: #000;
+  border: none;
+  border-radius: 6px;
+  padding: 7px 16px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'Open Sans', sans-serif;
+  letter-spacing: 0.3px;
+  transition: all 0.2s;
+}
+.btn-refresh-all:hover { background: #ffe033; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(255,213,0,0.3); }
+.btn-refresh-all:active { transform: translateY(0); }
+.btn-refresh-all.spinning .btn-refresh-icon { display: inline-block; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.topnav-date {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--muted);
+}
+.live-dot {
+  display: inline-block;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--green);
+  animation: pulse 2s infinite;
+  margin-right: 6px;
+}
+
+/* ── HERO ── */
+.hero {
+  padding: 48px 40px 40px;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+  animation: fadeUp 0.4s ease both;
+}
+.hero::after {
+  content: '';
+  position: absolute;
+  top: -100px; right: -100px;
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, rgba(255,213,0,0.05) 0%, transparent 60%);
+  pointer-events: none;
+}
+.hero-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  border: 1px solid;
+}
+.chip-gold  { background: var(--gold-dim);   border-color: var(--gold-mid);       color: var(--gold); }
+.chip-dim   { background: rgba(255,255,255,0.04); border-color: var(--border);   color: var(--muted); }
+.chip-blue  { background: var(--blue-dim);   border-color: rgba(79,142,247,0.3);  color: var(--blue); }
+.chip-green { background: var(--green-dim);  border-color: rgba(62,207,142,0.3);  color: var(--green); }
+.chip-red   { background: var(--red-dim);    border-color: rgba(244,63,94,0.3);   color: var(--red); }
+.chip-yellow{ background: var(--yellow-dim); border-color: rgba(251,191,36,0.3);  color: var(--yellow); }
+.chip-orange{ background: var(--orange-dim); border-color: rgba(249,115,22,0.3);  color: var(--orange); }
+.chip-purple{ background: var(--purple-dim); border-color: rgba(167,139,250,0.3); color: var(--purple); }
+
+.hero h1 {
+  font-size: 36px;
+  font-weight: 700;
+  letter-spacing: -1px;
+  line-height: 1.15;
+  margin-bottom: 10px;
+}
+.hero h1 em { font-style: normal; color: var(--gold); }
+.hero-sub { color: var(--muted); font-size: 15px; max-width: 560px; margin-bottom: 32px; }
+
+.stats-row { display: flex; gap: 0; flex-wrap: wrap; }
+.stat-item {
+  padding: 16px 28px;
+  border-right: 1px solid var(--border);
+}
+.stat-item:first-child { padding-left: 0; }
+.stat-item:last-child { border-right: none; }
+.stat-num {
+  font-size: 26px;
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.stat-lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.6px; }
+
+/* ── ALERT BAND ── */
+.alert-band {
+  margin: 32px 40px 0;
+  padding: 14px 20px;
+  background: linear-gradient(135deg, rgba(244,63,94,0.08), rgba(249,115,22,0.06));
+  border: 1px solid rgba(244,63,94,0.25);
+  border-radius: var(--r);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  animation: fadeUp 0.4s 0.1s ease both;
+}
+.alert-icon { font-size: 18px; flex-shrink: 0; }
+.alert-text { flex: 1; font-size: 13px; }
+.alert-text strong { color: var(--red); }
+.alert-cta {
+  flex-shrink: 0;
+  background: rgba(244,63,94,0.15);
+  border: 1px solid rgba(244,63,94,0.3);
+  color: var(--red);
+  padding: 5px 14px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: 'JetBrains Mono', monospace;
+}
+.alert-cta:hover { background: rgba(244,63,94,0.25); }
+
+/* ── MAIN LAYOUT ── */
+main { padding: 32px 40px; display: flex; flex-direction: column; gap: 32px; }
+
+/* ── SECTION HEADER ── */
+.section-hdr {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.section-title {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.section-title::before {
+  content: '';
+  display: inline-block;
+  width: 3px;
+  height: 14px;
+  background: var(--gold);
+  border-radius: 2px;
+}
+
+/* ── AGENT GRID ── */
+.agent-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+.agent-grid .card:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 20px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  animation: fadeUp 0.5s ease both;
+}
+.card:hover {
+  border-color: var(--border2);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+}
+
+.card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.card-title-row { display: flex; align-items: center; gap: 10px; }
+.card-icon {
+  width: 36px; height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+.card-icon.blue   { background: var(--blue-dim); }
+.card-icon.green  { background: var(--green-dim); }
+.card-icon.orange { background: var(--orange-dim); }
+.card-icon.purple { background: var(--purple-dim); }
+.card-icon.yellow { background: var(--yellow-dim); }
+
+.card-name { font-weight: 600; font-size: 14px; }
+.card-sub  { font-size: 11px; color: var(--muted); }
+
+.status-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+.status-dot.green  { background: var(--green); box-shadow: 0 0 6px rgba(62,207,142,0.5); }
+.status-dot.yellow { background: var(--yellow); box-shadow: 0 0 6px rgba(251,191,36,0.5); }
+.status-dot.red    { background: var(--red); box-shadow: 0 0 6px rgba(244,63,94,0.5); animation: pulse 2s infinite; }
+
+.card-section { margin-bottom: 14px; }
+.card-section-title {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--dim);
+  margin-bottom: 8px;
+}
+.finding-list, .rec-list { list-style: none; display: flex; flex-direction: column; gap: 5px; }
+.finding-list li {
+  font-size: 12.5px;
+  color: var(--muted);
+  padding-left: 14px;
+  position: relative;
+}
+.finding-list li::before { content: '·'; position: absolute; left: 0; color: var(--dim); }
+.rec-list li {
+  font-size: 12.5px;
+  color: var(--text);
+  padding-left: 16px;
+  position: relative;
+}
+.rec-list li::before { content: '→'; position: absolute; left: 0; color: var(--gold); font-size: 11px; }
+
+.card-divider { height: 1px; background: var(--border); margin: 14px 0; }
+
+/* ── WEEK COLUMNS ── */
+.week-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+/* ── CHECKLIST CARD ── */
+.checklist-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 20px;
+}
+.check-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.15s;
+  border-radius: 6px;
+  padding: 8px;
+  margin: 0 -8px;
+}
+.check-item:last-child { border-bottom: none; }
+.check-item:hover { background: var(--surface2); }
+
+.check-box {
+  width: 18px; height: 18px;
+  border: 1.5px solid var(--border2);
+  border-radius: 4px;
+  flex-shrink: 0;
+  margin-top: 1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  font-size: 10px;
+}
+.check-item.checked .check-box {
+  background: var(--green);
+  border-color: var(--green);
+  color: #0a0c12;
+}
+.check-item.checked .check-label { text-decoration: line-through; color: var(--dim); }
+
+.check-label { font-size: 13px; flex: 1; }
+.check-priority { font-size: 10px; flex-shrink: 0; margin-top: 2px; }
+
+/* ── COMPLETED LIST ── */
+.completed-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.completed-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 12px;
+}
+.completed-check { color: var(--green); font-size: 13px; flex-shrink: 0; margin-top: 1px; }
+.completed-text { color: var(--muted); line-height: 1.5; }
+.completed-text strong { color: var(--text); display: block; margin-bottom: 2px; }
+
+/* ── CLAUDE COMMANDS ── */
+.commands-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.cmd-btn {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+  position: relative;
+  overflow: hidden;
+}
+.cmd-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, transparent, rgba(79,142,247,0.03));
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.cmd-btn:hover {
+  border-color: var(--blue);
+  box-shadow: 0 0 16px rgba(79,142,247,0.1);
+}
+.cmd-btn:hover::before { opacity: 1; }
+.cmd-btn:active { transform: scale(0.98); }
+.cmd-emoji { font-size: 20px; margin-bottom: 8px; display: block; }
+.cmd-name { font-size: 13px; font-weight: 600; margin-bottom: 4px; color: var(--text); }
+.cmd-desc { font-size: 11px; color: var(--muted); line-height: 1.4; }
+.cmd-code {
+  margin-top: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--blue);
+  background: var(--blue-dim);
+  padding: 3px 8px;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+/* ── VERIFY DRAWER ── */
+.verify-drawer {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  z-index: 300;
+  background: var(--surface2);
+  border-top: 2px solid var(--green);
+  padding: 24px 40px;
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.16,1,0.3,1);
+  display: flex;
+  gap: 32px;
+  align-items: flex-start;
+  box-shadow: 0 -20px 60px rgba(0,0,0,0.5);
+}
+.verify-drawer.open { transform: translateY(0); }
+.verify-icon { font-size: 28px; flex-shrink: 0; margin-top: 2px; }
+.verify-body { flex: 1; }
+.verify-title {
+  font-size: 15px; font-weight: 700;
+  color: var(--green); margin-bottom: 14px;
+  display: flex; align-items: center; gap: 8px;
+}
+.verify-title::before { content: '→ Test:'; font-size: 11px; color: var(--muted); font-weight: 400; }
+.verify-steps { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+.verify-steps li {
+  font-size: 13px; color: var(--text);
+  padding-left: 20px; position: relative;
+}
+.verify-steps li::before {
+  content: attr(data-n);
+  position: absolute; left: 0;
+  color: var(--green);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; font-weight: 600;
+}
+.verify-actions { display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; }
+.verify-btn {
+  padding: 9px 20px; border-radius: 8px;
+  font-size: 13px; font-weight: 600;
+  cursor: pointer; border: 1px solid;
+  transition: all 0.2s; white-space: nowrap;
+  font-family: 'Space Grotesk', sans-serif;
+  text-decoration: none; display: inline-block; text-align: center;
+}
+.verify-btn-go {
+  background: var(--blue-dim); border-color: rgba(79,142,247,0.4);
+  color: var(--blue);
+}
+.verify-btn-go:hover { background: rgba(79,142,247,0.2); }
+.verify-btn-ok {
+  background: var(--green-dim); border-color: rgba(62,207,142,0.4);
+  color: var(--green);
+}
+.verify-btn-ok:hover { background: rgba(62,207,142,0.2); }
+.verify-btn-undo {
+  background: transparent; border-color: var(--border);
+  color: var(--muted); font-size: 11px; padding: 6px 14px;
+}
+.verify-btn-undo:hover { color: var(--red); border-color: rgba(244,63,94,0.4); }
+
+/* ── NOTES SECTION ── */
+.notes-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 20px 24px;
+}
+.notes-header {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 14px;
+}
+.notes-title { font-size: 13px; font-weight: 600; color: var(--yellow); }
+.notes-hint { font-size: 11px; color: var(--dim); margin-left: auto; }
+.notes-save-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--dim); transition: background 0.3s;
+}
+.notes-save-dot.saved { background: var(--green); }
+.notes-textarea {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  line-height: 1.7;
+  padding: 14px 16px;
+  resize: vertical;
+  min-height: 120px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.notes-textarea:focus { border-color: var(--yellow); }
+.notes-textarea::placeholder { color: var(--dim); font-family: 'Space Grotesk', sans-serif; }
+.notes-footer {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-top: 10px; font-size: 11px; color: var(--dim);
+}
+.notes-clear {
+  background: none; border: none; color: var(--dim);
+  cursor: pointer; font-size: 11px; padding: 2px 6px;
+  border-radius: 4px; transition: color 0.2s;
+  font-family: 'Space Grotesk', sans-serif;
+}
+.notes-clear:hover { color: var(--red); }
+
+.copy-toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: var(--green);
+  color: #0a0c12;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  z-index: 200;
+  transform: translateY(20px);
+  opacity: 0;
+  transition: all 0.25s;
+  pointer-events: none;
+}
+.copy-toast.show { transform: translateY(0); opacity: 1; }
+
+/* ── KPI BAND ── */
+.kpi-band {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+.kpi-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 14px 16px;
+}
+.kpi-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 6px; }
+.kpi-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.kpi-target { font-size: 10px; color: var(--dim); }
+.kpi-bar { height: 3px; background: var(--border); border-radius: 2px; margin-top: 8px; overflow: hidden; }
+.kpi-fill { height: 100%; border-radius: 2px; transition: width 1s ease; }
+
+/* ── COMPACT AD ── */
+.cad-row { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:10px; }
+.cad-item { background:var(--surface3); border-radius:6px; padding:8px 10px; text-align:center; }
+.cad-item span { display:block; font-size:9px; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; margin-bottom:3px; }
+.cad-item strong { font-size:15px; font-weight:700; font-family:'JetBrains Mono',monospace; color:var(--text); }
+.cad-campaigns { font-size:11px; color:var(--dim); margin-top:6px; line-height:1.6; }
+.cad-campaigns b { color:var(--text); }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 900px) {
+  .kpi-band { grid-template-columns: repeat(3, 1fr); }
+  .agent-grid { grid-template-columns: 1fr; }
+  .agent-grid .card:last-child:nth-child(odd) { grid-column: auto; }
+  .commands-grid { grid-template-columns: repeat(2, 1fr); }
+  .stats-row { flex-wrap: wrap; }
+}
+@media (max-width: 768px) {
+  .topnav { padding: 0 16px; height: 52px; }
+  .topnav-name { display: none; }
+  .btn-refresh-all span:last-child { display: none; }
+  .btn-refresh-all { padding: 7px 10px; }
+  main { padding: 20px 16px; gap: 24px; }
+  .hero { padding: 28px 16px 24px; }
+  .hero h1 { font-size: 26px; }
+  .alert-band { margin: 16px 16px 0; flex-wrap: wrap; }
+  .live-strip { padding: 8px 16px; }
+  .kpi-band { grid-template-columns: repeat(2, 1fr); }
+  .week-grid { grid-template-columns: 1fr; }
+  .live-2col { grid-template-columns: 1fr !important; }
+  .completed-grid { grid-template-columns: 1fr; }
+  .verify-drawer { padding: 16px 16px; flex-direction: column; }
+  .stat-item { padding: 10px 14px; }
+}
+@media (max-width: 480px) {
+  .kpi-band { grid-template-columns: 1fr 1fr; }
+  .commands-grid { grid-template-columns: 1fr; }
+  .cad-row { grid-template-columns: repeat(2, 1fr); }
+  .hero h1 { font-size: 22px; }
+  .chip { font-size: 9px; padding: 2px 7px; }
+}
+
+/* ── FOOTER ── */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 20px 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--dim);
+}
+.footer-links { display: flex; gap: 20px; }
+.footer-link {
+  color: var(--dim);
+  text-decoration: none;
+  transition: color 0.2s;
+  cursor: pointer;
+}
+.footer-link:hover { color: var(--blue); }
+
+/* ── LIVE DATA ── */
+.live-strip { display:flex; align-items:center; gap:10px; padding:8px 40px; background:var(--surface); border-bottom:1px solid var(--border); font-size:11px; flex-wrap:wrap; }
+.live-src { display:flex; align-items:center; gap:5px; padding:3px 10px; background:var(--surface2); border-radius:20px; white-space:nowrap; }
+.live-dot { width:6px; height:6px; border-radius:50%; background:var(--dim); flex-shrink:0; transition:background .3s; }
+.live-dot.ok { background:var(--green); }
+.live-dot.err { background:var(--red); }
+.live-dot.spin { background:var(--yellow); animation:spin-dot .8s infinite; }
+@keyframes spin-dot { 0%,100%{opacity:1}50%{opacity:.3} }
+.live-ts { color:var(--dim); font-size:10px; margin-left:auto; }
+.live-refresh { background:none; border:1px solid var(--border); border-radius:20px; color:var(--muted); font-size:11px; font-family:'Space Grotesk',sans-serif; padding:3px 12px; cursor:pointer; transition:color .2s; }
+.live-refresh:hover { color:var(--text); }
+.live-2col { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:12px; }
+.live-card { background:var(--surface2); border-radius:8px; padding:14px; }
+.live-card-title { font-size:11px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; margin-bottom:10px; }
+.ltable { width:100%; border-collapse:collapse; font-size:11px; }
+.ltable th { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; text-align:left; padding:4px 8px; border-bottom:1px solid var(--border); font-weight:500; }
+.ltable td { padding:5px 8px; border-bottom:1px solid var(--border); color:var(--text); }
+.ltable td.mono { font-family:'JetBrains Mono',monospace; }
+.ltable tr:last-child td { border-bottom:none; }
+.live-placeholder { text-align:center; color:var(--dim); padding:16px; font-size:11px; font-style:italic; }
+.live-err-msg { padding:8px 12px; background:var(--red-dim); border:1px solid rgba(244,63,94,.3); border-radius:6px; font-size:11px; color:var(--red); line-height:1.5; }
+</style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<nav class="topnav">
+  <div class="topnav-brand">
+    <img src="ficila-logo.png" alt="Fıçıla" onerror="this.style.display='none';document.getElementById('logo-fallback').style.display='flex';" style="height:36px; flex-shrink:0; object-fit:contain;">
+    <span id="logo-fallback" style="display:none; align-items:center; font-family:'Roboto Slab',serif; font-weight:700; font-size:18px; letter-spacing:2px; color:#fff; text-transform:uppercase;">FIQILA</span>
+    <span class="chip chip-gold">Yönetim Paneli</span>
+  </div>
+  <div class="topnav-right">
+    <span class="topnav-date" id="current-date"></span>
+    <span class="chip chip-green"><span class="live-dot"></span>Aktif</span>
+    <button class="btn-refresh-all" id="btn-refresh-all" onclick="refreshAll(this)">
+      <span class="btn-refresh-icon">↻</span> Tümünü Yenile
+    </button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="hero-eyebrow">
+    <span class="chip chip-blue">Hafta 14 · 29 Mart 2026</span>
+  </div>
+  <h1>Fıçıla <em>Yönetim Paneli</em></h1>
+  <p class="hero-sub">4 ajan paralel çalışıyor — SEO, Reklam, UX, İçerik & Analytics. Her Çarşamba güncellenir.</p>
+  <div class="stats-row">
+    <div class="stat-item">
+      <div class="stat-num" style="color:var(--blue)">1.435</div>
+      <div class="stat-lbl">Organik Tıklama / Hafta</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num" style="color:var(--green)">1.000 ₺</div>
+      <div class="stat-lbl">Haftalık Reklam Bütçesi</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num" style="color:var(--green)">2+3</div>
+      <div class="stat-lbl">Meta AKTİF · Google Ads çalışıyor</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num" style="color:var(--red)">2</div>
+      <div class="stat-lbl">Kritik Aksiyon</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num" style="color:var(--purple)">26</div>
+      <div class="stat-lbl">Tamamlanan Fix</div>
+    </div>
+  </div>
+</header>
+
+<!-- ALERT -->
+<div class="alert-band">
+  <span class="alert-icon">⚠️</span>
+  <span class="alert-text">
+    <strong>Aktif İzleme:</strong>
+    Google Ads Nitro Kahve CPC 10.24 ₺ — hedef &lt;5 ₺, alarm &gt;8 ₺ · Meta token yenileme: <strong>28 Mayıs 2026</strong>
+  </span>
+  <button class="alert-cta" onclick="copyCmd('ficila Google Ads Nitro Kahve kampanyasının CPC optimizasyonunu yap')">Optimize Et →</button>
+</div>
+
+<!-- LIVE DATA STRIP -->
+<div class="live-strip">
+  <span style="color:var(--dim);font-size:10px;text-transform:uppercase;letter-spacing:.5px;flex-shrink:0;">Canlı Veri</span>
+  <div class="live-src"><span class="live-dot spin" id="dot-meta"></span><span id="lbl-meta">Meta API bekleniyor…</span></div>
+  <div class="live-src"><span class="live-dot spin" id="dot-proxy"></span><span id="lbl-proxy">Google Ads Proxy bekleniyor…</span></div>
+  <div class="live-src"><span class="live-dot spin" id="dot-sheets"></span><span id="lbl-sheets">Sheets bekleniyor…</span></div>
+  <span class="live-ts" id="live-ts"></span>
+  <button class="live-refresh" onclick="loadAllLive()">↻ Yenile</button>
+</div>
+
+<main>
+
+  <!-- KPI BAND -->
+  <section class="fade-up">
+    <div class="section-hdr">
+      <span class="section-title">KPI & Analitik Özeti</span>
+      <span class="chip chip-blue">Mart 2026 · 1–29 Mar</span>
+    </div>
+    <div class="kpi-band">
+      <div class="kpi-card">
+        <div class="kpi-label">Aylık Satış</div>
+        <div class="kpi-value" style="color:var(--green)" id="kpi-sales">—</div>
+        <div class="kpi-target" id="kpi-sales-target">Yükleniyor…</div>
+        <div class="kpi-bar"><div class="kpi-fill" id="kpi-sales-bar" style="width:0%; background:var(--green)"></div></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Organik Trafik</div>
+        <div class="kpi-value" style="color:var(--blue)" id="kpi-organic">—</div>
+        <div class="kpi-target" id="kpi-organic-target">Yükleniyor…</div>
+        <div class="kpi-bar"><div class="kpi-fill" id="kpi-organic-bar" style="width:0%; background:var(--blue)"></div></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Shopping Geliri</div>
+        <div class="kpi-value" style="color:var(--purple)" id="kpi-shopping">—</div>
+        <div class="kpi-target" id="kpi-shopping-target">Yükleniyor…</div>
+        <div class="kpi-bar"><div class="kpi-fill" id="kpi-shopping-bar" style="width:0%; background:var(--purple)"></div></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Organik CTR</div>
+        <div class="kpi-value" style="color:var(--yellow)" id="kpi-ctr">—</div>
+        <div class="kpi-target" id="kpi-ctr-target">Yükleniyor…</div>
+        <div class="kpi-bar"><div class="kpi-fill" id="kpi-ctr-bar" style="width:0%; background:var(--yellow)"></div></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Meta CPM</div>
+        <div class="kpi-value" style="color:var(--green)" id="kpi-meta-cpm">—</div>
+        <div class="kpi-target" id="kpi-meta-cpm-target">Hedef: &lt;60 ₺ · Kampanya aktif</div>
+        <div class="kpi-bar"><div class="kpi-fill" style="width:0%; background:var(--dim)"></div></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Google Ads CPC</div>
+        <div class="kpi-value" style="color:var(--red)" id="kpi-gads-cpc">10,24 ₺</div>
+        <div class="kpi-target" id="kpi-gads-cpc-target">Hedef: &lt;5 ₺ · 🔴 Alarm &gt;8 ₺</div>
+        <div class="kpi-bar"><div class="kpi-fill" style="width:100%; background:var(--red)"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SOSYAL MEDYA -->
+  <section class="fade-up">
+    <div class="section-hdr">
+      <span class="section-title">Sosyal Medya</span>
+      <span id="social-badge" class="chip chip-dim">Yükleniyor…</span>
+    </div>
+    <div class="live-2col" style="grid-template-columns:1fr 1fr 1fr; gap:14px;">
+      <div class="live-card">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+          <svg width="20" height="20" viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#1877F2"/><path d="M14.8 12H13v7h-2.5v-7H9V9.5h1.5V8.1C10.5 6.2 11.6 5 13.6 5c.9 0 1.8.1 1.8.1v2h-1c-1 0-1.3.5-1.3 1.2v1.2H15.3L14.8 12z" fill="white"/></svg>
+          <span style="font-size:11px;font-weight:700;color:#1877F2;letter-spacing:.08em;">FACEBOOK</span>
+        </div>
+        <div id="fb-live-container">
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-size:12px; color:var(--dim);">Takipçi</span>
+              <span style="font-size:20px; font-weight:700; color:var(--gold); font-family:'Roboto Slab',serif;">524</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-size:12px; color:var(--dim);">Sayfa</span>
+              <span style="font-size:12px; color:var(--gold);">Ficila.com.tr</span>
+            </div>
+            <div style="font-size:11px; color:var(--dim); margin-top:4px; padding-top:8px; border-top:1px solid var(--border);">
+              Yenile butonuna bas → canlı veri çekilecek
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="live-card">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+          <svg width="20" height="20" viewBox="0 0 24 24"><rect width="24" height="24" rx="5" fill="#0081FB"/><path d="M4 14.5c0 1.9 1.5 3.5 3.3 3.5 1 0 1.8-.4 2.4-1.1L12 14l2.3 2.9c.6.7 1.4 1.1 2.4 1.1 1.8 0 3.3-1.6 3.3-3.5 0-1-.4-1.9-1-2.5L16.5 9c-.5-.6-1.2-.9-2-.9s-1.5.3-2 .9L12 10l-.5-.9c-.5-.6-1.2-.9-2-.9s-1.5.3-2 .9L5 12c-.6.6-1 1.5-1 2.5z" fill="white"/></svg>
+          <span style="font-size:11px;font-weight:700;color:#0081FB;letter-spacing:.08em;">META ADS · MART 2026</span>
+        </div>
+        <div id="meta-social-container">
+          <div style="font-size:12px;color:var(--dim);">Yükleniyor…</div>
+        </div>
+      </div>
+      <div class="live-card">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+          <svg width="20" height="20" viewBox="0 0 24 24"><defs><radialGradient id="igG" cx="30%" cy="107%" r="140%"><stop offset="0%" stop-color="#fdf497"/><stop offset="20%" stop-color="#fd5949"/><stop offset="55%" stop-color="#d6249f"/><stop offset="90%" stop-color="#285AEB"/></radialGradient></defs><rect width="24" height="24" rx="6" fill="url(#igG)"/><rect x="6" y="6" width="12" height="12" rx="3.5" fill="none" stroke="white" stroke-width="1.5"/><circle cx="12" cy="12" r="3" fill="none" stroke="white" stroke-width="1.5"/><circle cx="17" cy="7" r="1" fill="white"/></svg>
+          <span style="font-size:11px;font-weight:700;background:linear-gradient(90deg,#fd5949,#d6249f,#285AEB);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:.08em;">INSTAGRAM</span>
+        </div>
+        <div id="ig-live-container">
+          <div style="font-size:12px; color:var(--yellow);">Yükleniyor…</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CANLI REKLAM VERİSİ -->
+  <section class="fade-up">
+    <div class="section-hdr">
+      <span class="section-title">Canlı Reklam Özeti — Son 7 Gün</span>
+      <span class="chip chip-yellow" id="live-section-badge">Yükleniyor…</span>
+    </div>
+    <div class="live-2col">
+      <div class="live-card">
+        <div class="live-card-title">Meta Ads <span style="color:var(--dim);font-size:10px;font-weight:400;text-transform:none;">act_875332702913852</span></div>
+        <div id="meta-live-container"><div class="live-placeholder">Yükleniyor…</div></div>
+      </div>
+      <div class="live-card">
+        <div class="live-card-title">Google Ads <span style="color:var(--dim);font-size:10px;font-weight:400;text-transform:none;">502-189-2462</span></div>
+        <div id="gads-live-container"><div class="live-placeholder">Proxy bekleniyor — terminalde <code style="font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--dim);">ficila-proxy</code></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- AJAN ÖNERİLERİ -->
+  <section class="fade-up">
+    <div class="section-hdr">
+      <span class="section-title">Ajan Önerileri</span>
+      <span style="font-size:11px; color:var(--dim)" id="agent-update-ts">Son kontrol: 29 Mar 2026</span>
+    </div>
+    <div class="agent-grid">
+
+      <!-- SEO -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title-row">
+            <div class="card-icon blue">🔍</div>
+            <div>
+              <div class="card-name">SEO Stratejisti</div>
+              <div class="card-sub">Organik büyüme & teknik SEO</div>
+            </div>
+          </div>
+          <div class="status-dot red" title="Aksiyon gerekli"></div>
+        </div>
+        <div class="card-section">
+          <ul class="rec-list" id="seo-recs">
+            <li>GSC'de nitro-kokteyl-receteler URL'i için "İndekse Al" isteği gönder</li>
+            <li>Blog yazısına <em>nitro kokteyl sistemi</em> / <em>nitro içecek reçetesi</em> terimlerini 2-3 kez ekle</li>
+            <li>N2 vs CO2 karşılaştırma yazısı — B2B kafe/bar sahipleri için — 8 Nisan hedefi</li>
+            <li>/nitro-kahve/ kategori sayfasına iç link ekle — PageRank akışı yok</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- REKLAM -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title-row">
+            <div class="card-icon orange">📢</div>
+            <div>
+              <div class="card-name">Reklam Ajanı</div>
+              <div class="card-sub">Google Ads · Meta Ads</div>
+            </div>
+          </div>
+          <div class="status-dot red" title="CPC alarm seviyesinde"></div>
+        </div>
+        <div class="card-section">
+          <ul class="rec-list" id="ads-recs">
+            <li id="ads-rec-cpc">Nitro Kahve CPC: 10,24 ₺ — Max CPC bid'i 5 ₺'ye düşür, geniş eşleşmeleri kısıtla</li>
+            <li>Brand Protection + Nitro Kokteyl: 0 gösterim — bütçe artır veya teklif stratejisini manuel CPC'ye geçir</li>
+            <li>Search terms raporu: alakasız aramaları negatif listeye ekle</li>
+            <li>Meta: Nisan kampanyaları aktif — 7 günlük CTR verisi toplandığında A/B test yap</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- UX -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title-row">
+            <div class="card-icon purple">🎨</div>
+            <div>
+              <div class="card-name">UX Tasarımcı</div>
+              <div class="card-sub">Dönüşüm & kullanıcı deneyimi</div>
+            </div>
+          </div>
+          <div class="status-dot yellow" title="Dikkat gerekiyor"></div>
+        </div>
+        <div class="card-section">
+          <ul class="rec-list">
+            <li>İncelemeler sekmesini doldur — cr-reviews emaili aktif, henüz yorum yok; müşterilere 5 yıldız hatırlatması ekle</li>
+            <li>Stokta olmayan ürünleri cross-sell listesinden filtrele — güven kaybı yapıyor</li>
+            <li>GA4 JS Error (22 adet) — hangi sayfadan geldiğini tespit et → GTM → Özel Etiket</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- İÇERİK -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title-row">
+            <div class="card-icon green">✍️</div>
+            <div>
+              <div class="card-name">İçerik Yazarı</div>
+              <div class="card-sub">Blog · Ürün metinleri</div>
+            </div>
+          </div>
+          <div class="status-dot yellow" title="Dikkat gerekiyor"></div>
+        </div>
+        <div class="card-section">
+          <ul class="rec-list">
+            <li><strong>N2 vs CO2: Hangisi Daha İyi?</strong> — B2B kafe/bar rehberi — 8 Nisan yayın hedefi</li>
+            <li>Nisan sezonlu: bahar piknik birası / açık hava bar kurulum rehberi</li>
+            <li>/ev-birasi/ ve /nitro-kahve/ kategori sayfalarına iç link desteği ver</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- ANALYTİCS -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title-row">
+            <div class="card-icon" style="background:var(--yellow-dim)">📊</div>
+            <div>
+              <div class="card-name">Analytics & Data</div>
+              <div class="card-sub">Trafik · Dönüşüm · ROAS</div>
+            </div>
+          </div>
+          <div class="status-dot yellow" title="Takip gerekiyor"></div>
+        </div>
+        <div class="card-section">
+          <ul class="rec-list">
+            <li>GA4 JS Error (22 adet) — GTM'de özel etiket kur → hata sayfasını tespit et</li>
+            <li>Nisan reklamları başladı — ilk 7 gün sonunda ROAS hesapla (kampanya / gelir)</li>
+            <li>Search Console × GA4 entegrasyonunu tamamla — organik dönüşüm izleme eksik</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- HAFTALIK PLAN -->
+  <section class="fade-up">
+    <div class="section-hdr">
+      <span class="section-title">Haftalık Çalışma Planı</span>
+    </div>
+    <div class="week-grid">
+
+      <!-- TAMAMLANANLAR -->
+      <div class="checklist-card">
+        <div style="font-size:12px; font-weight:600; color:var(--green); margin-bottom:14px; display:flex; align-items:center; gap:6px;">
+          <span>✓</span> Bu Ay Tamamlananlar
+        </div>
+        <div class="check-item checked" onclick="toggle(this)">
+          <div class="check-box">✓</div>
+          <div class="check-label">Month 1: AI crawlers, redirects, alt texts, reviews</div>
+        </div>
+        <div class="check-item checked" onclick="toggle(this)">
+          <div class="check-box">✓</div>
+          <div class="check-label">Month 2: OG tags, noindex, hreflang, slug düzeltme</div>
+        </div>
+        <div class="check-item checked" onclick="toggle(this)">
+          <div class="check-box">✓</div>
+          <div class="check-label">Month 3: OG image, ürün açıklamaları, blog redirects</div>
+        </div>
+        <div class="check-item checked" onclick="toggle(this)">
+          <div class="check-box">✓</div>
+          <div class="check-label">AggregateRating schema (WPCode snippet)</div>
+        </div>
+        <div class="check-item checked" onclick="toggle(this)">
+          <div class="check-box">✓</div>
+          <div class="check-label">Nisan kampanyası hazırlandı (3 Google + 2 Meta)</div>
+        </div>
+        <div class="check-item checked" onclick="toggle(this)">
+          <div class="check-box">✓</div>
+          <div class="check-label">Meta API bağlandı (act_875332702913852)</div>
+        </div>
+        <div class="check-item checked" onclick="toggle(this)">
+          <div class="check-box">✓</div>
+          <div class="check-label">Çarşamba otomatik optimizasyon trigger'ı kuruldu</div>
+        </div>
+        <div class="check-item checked" onclick="toggle(this)">
+          <div class="check-box">✓</div>
+          <div class="check-label">Meta Pixel kuruldu (ID: 1137510490037550, WPCode)</div>
+        </div>
+        <div class="check-item checked" onclick="toggle(this)">
+          <div class="check-box">✓</div>
+          <div class="check-label">GTM doğrulandı (GTM-T69WRFL aktif)</div>
+        </div>
+        <div class="check-item checked" onclick="toggle(this)">
+          <div class="check-box">✓</div>
+          <div class="check-label">robots.txt AI crawler bloğu kaldırıldı (Cloudflare)</div>
+        </div>
+        <div class="check-item checked" onclick="toggle(this)">
+          <div class="check-box">✓</div>
+          <div class="check-label">Checkout popup kaldırıldı (#kadence-conversion-6584 CSS)</div>
+        </div>
+        <div class="check-item checked" onclick="toggle(this)">
+          <div class="check-box">✓</div>
+          <div class="check-label">WooCommerce API bağlandı (Satış Ajanı aktif)</div>
+        </div>
+        <div class="check-item checked" onclick="toggle(this)">
+          <div class="check-box">✓</div>
+          <div class="check-label">Meta API token yenilendi (son: 26 Mayıs 2026)</div>
+        </div>
+        <div class="check-item checked" onclick="toggle(this)">
+          <div class="check-box">✓</div>
+          <div class="check-label">Meta kampanya yapısı API ile oluşturuldu (2 kampanya · 4 ad set · 4 reklam)</div>
+        </div>
+        <div class="check-item checked" onclick="toggle(this)">
+          <div class="check-box">✓</div>
+          <div class="check-label">NEO Meta app Live moda alındı — creative API çalışıyor</div>
+        </div>
+        <div class="check-item checked" onclick="toggle(this)">
+          <div class="check-box">✓</div>
+          <div class="check-label">4 Google MCP server aktif ve test edildi (Sheets, Ads, Analytics, GSC)</div>
+        </div>
+        <div class="check-item checked" onclick="toggle(this)">
+          <div class="check-box">✓</div>
+          <div class="check-label">Kredi kartı default ödeme yöntemi yapıldı</div>
+        </div>
+        <div class="check-item checked" onclick="toggle(this)">
+          <div class="check-box">✓</div>
+          <div class="check-label">Google Ads + Meta kampanyaları aktive edildi — yayında</div>
+        </div>
+        <div class="check-item checked" onclick="toggle(this)">
+          <div class="check-box">✓</div>
+          <div class="check-label">Komuta dashboard interaktif — Meta API + Google Ads proxy canlı veri</div>
+        </div>
+        <div class="check-item checked" onclick="toggle(this)">
+          <div class="check-box">✓</div>
+          <div class="check-label">Merchant Center: fiziksel mağaza kaldırıldı, image_link düzeltildi</div>
+        </div>
+        <div class="check-item checked" onclick="toggle(this)">
+          <div class="check-box">✓</div>
+          <div class="check-label">GA4 e-ticaret tracking doğrulandı — purchase eventi geliyor</div>
+        </div>
+      </div>
+
+      <!-- AÇIK GÖREVLER -->
+      <div class="checklist-card">
+        <div style="font-size:12px; font-weight:600; color:var(--yellow); margin-bottom:14px; display:flex; align-items:center; gap:6px;">
+          <span>→</span> Açık Görevler
+        </div>
+        <div class="check-item" onclick="toggle(this)">
+          <div class="check-box"></div>
+          <div class="check-label">Google Ads Nitro Kahve CPC optimize et — 10.24 ₺ → hedef &lt;5 ₺</div>
+          <span class="check-priority"><span class="chip chip-red">KRİTİK</span></span>
+        </div>
+        <div class="check-item" onclick="toggle(this)">
+          <div class="check-box"></div>
+          <div class="check-label">N2 vs CO2 blog yazısı — B2B kafe/bar rehberi (8 Nis yayın hedefi)</div>
+          <span class="check-priority"><span class="chip chip-orange">YÜKSEK</span></span>
+        </div>
+        <div class="check-item" onclick="toggle(this)">
+          <div class="check-box"></div>
+          <div class="check-label">Brand Protection + Nitro Kokteyl kampanyaları: 0 gösterim — bütçe/teklif kontrol</div>
+          <span class="check-priority"><span class="chip chip-orange">YÜKSEK</span></span>
+        </div>
+        <div class="check-item" onclick="toggle(this)">
+          <div class="check-box"></div>
+          <div class="check-label">Merchant Center envanter hatasının temizlendiğini doğrula (24 saat)</div>
+          <span class="check-priority"><span class="chip chip-yellow">ORTA</span></span>
+        </div>
+        <div class="check-item" onclick="toggle(this)">
+          <div class="check-box"></div>
+          <div class="check-label">GA4 JS Error eventleri — hangi sayfadan geldiğini tespit et (22 adet)</div>
+          <span class="check-priority"><span class="chip chip-yellow">ORTA</span></span>
+        </div>
+        <div class="check-item" onclick="toggle(this)">
+          <div class="check-box"></div>
+          <div class="check-label">Meta token yenile — son tarih: 26 Mayıs 2026 (developers.facebook.com/tools/explorer)</div>
+          <span class="check-priority"><span class="chip chip-yellow">ORTA</span></span>
+        </div>
+        <div class="check-item" onclick="toggle(this)">
+          <div class="check-box"></div>
+          <div class="check-label">KegKing Apollo 30L + CO2 Regülatör stok yenileme</div>
+          <span class="check-priority"><span class="chip chip-yellow">ORTA</span></span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- CLAUDE KOMUTLAR -->
+  <section class="fade-up">
+    <div class="section-hdr">
+      <span class="section-title">Claude ile Hızlı Çalış</span>
+      <span style="font-size:11px; color:var(--dim)">Butona tıkla → metni kopyala → Claude'a yapıştır</span>
+    </div>
+    <div class="commands-grid">
+      <button class="cmd-btn" onclick="copyCmd('ficila.com.tr için bu haftaki SEO durumunu analiz et ve gelecek hafta için öncelikli aksiyonları listele')">
+        <span class="cmd-emoji">🔍</span>
+        <div class="cmd-name">SEO Analizi</div>
+        <div class="cmd-desc">Organik trafik durumu, sıralama değişimleri, teknik sorunlar</div>
+        <span class="cmd-code">seo-analysis</span>
+      </button>
+      <button class="cmd-btn" onclick="copyCmd('ficila Meta ve Google Ads bu haftaki verilerle optimize et, KPI alarmlarını kontrol et')">
+        <span class="cmd-emoji">📢</span>
+        <div class="cmd-name">Reklam Optimize</div>
+        <div class="cmd-desc">Google Ads + Meta haftalık KPI analizi ve optimizasyon önerileri</div>
+        <span class="cmd-code">reklam</span>
+      </button>
+      <button class="cmd-btn" onclick="copyCmd('ficila için nitro kokteyl konusunda SEO uyumlu Türkçe blog yazısı yaz, bar ve kafe sahiplerine hitap etsin')">
+        <span class="cmd-emoji">✍️</span>
+        <div class="cmd-name">Blog Yaz</div>
+        <div class="cmd-desc">Nitro kokteyl rehber yazısı — B2B kafe/bar kitlesi için</div>
+        <span class="cmd-code">blog-content-writer</span>
+      </button>
+      <button class="cmd-btn" onclick="copyCmd('ficila.com.tr UX sorunlarını analiz et, özellikle mobil CTA ve checkout akışını değerlendir')">
+        <span class="cmd-emoji">🎨</span>
+        <div class="cmd-name">UX İncele</div>
+        <div class="cmd-desc">Mobil deneyim, checkout akışı, dönüşüm engelleri</div>
+        <span class="cmd-code">ecommerce-ux-designer</span>
+      </button>
+      <button class="cmd-btn" onclick="copyCmd('ficila GTM ve Meta Pixel kurulumunu adım adım yapalım')">
+        <span class="cmd-emoji">📡</span>
+        <div class="cmd-name">GTM + Pixel Kur</div>
+        <div class="cmd-desc">Dönüşüm takibi için GTM ve Meta Pixel kurulum rehberi</div>
+        <span class="cmd-code">analytics setup</span>
+      </button>
+      <button class="cmd-btn" onclick="copyCmd('ficila haftalık rapor güncelle')">
+        <span class="cmd-emoji">🔄</span>
+        <div class="cmd-name">Raporu Güncelle</div>
+        <div class="cmd-desc">Bu dashboard'u tüm ajanlarla güncelle ve yeni haftaya hazırla</div>
+        <span class="cmd-code">ficila-haftalik-rapor</span>
+      </button>
+    </div>
+  </section>
+
+</main>
+
+<!-- FOOTER -->
+<footer>
+  <div>Son güncelleme: <strong>28 Mart 2026</strong> · Sonraki: <strong>1 Nisan 2026</strong> (Çarşamba 08:00)</div>
+  <div class="footer-links">
+    <span class="footer-link" onclick="copyCmd('ficila haftalık rapor güncelle')">Raporu Güncelle</span>
+    <a class="footer-link" href="https://claude.ai/code/scheduled/trig_01XbQg7nPpkghBuv8o5xBRUW" target="_blank">Çarşamba Trigger</a>
+    <a class="footer-link" href="https://adsmanager.facebook.com/adsmanager/manage/campaigns?act=875332702913852" target="_blank">Meta Ads Manager</a>
+    <span class="footer-link" style="color:var(--yellow)">⚠️ Meta token: 26 Mayıs 2026</span>
+  </div>
+</footer>
+
+<div class="copy-toast" id="toast">Kopyalandı! Claude'a yapıştır →</div>
+
+<!-- VERIFY DRAWER -->
+<div class="verify-drawer" id="verify-drawer">
+  <div class="verify-icon">🧪</div>
+  <div class="verify-body">
+    <div class="verify-title" id="verify-title">Test Adımları</div>
+    <ul class="verify-steps" id="verify-steps"></ul>
+  </div>
+  <div class="verify-actions">
+    <a class="verify-btn verify-btn-go" id="verify-url" href="#" target="_blank">Siteye Git →</a>
+    <button class="verify-btn verify-btn-ok" onclick="confirmVerify()">✓ Doğrulandı, İşaretle</button>
+    <button class="verify-btn verify-btn-undo" onclick="cancelVerify()">İptal — henüz yapmadım</button>
+  </div>
+</div>
+
+<script>
+// Date
+const d = new Date();
+document.getElementById('current-date').textContent =
+  d.toLocaleDateString('tr-TR', {day:'numeric', month:'long', year:'numeric'});
+
+// ── VERIFY DRAWER ──
+let _pendingEl = null;
+
+function toggle(el) {
+  const willCheck = !el.classList.contains('checked');
+  if (willCheck && el.dataset.verifyTitle) {
+    _pendingEl = el;
+    openVerify(el);
+  } else {
+    el.classList.toggle('checked');
+    const key = el.dataset.key;
+    if (key) localStorage.setItem(key, el.classList.contains('checked') ? '1' : '0');
+  }
+}
+
+function openVerify(el) {
+  const drawer = document.getElementById('verify-drawer');
+  document.getElementById('verify-title').textContent = el.dataset.verifyTitle || 'Test Adımları';
+  const stepsEl = document.getElementById('verify-steps');
+  stepsEl.replaceChildren();
+  (el.dataset.verifySteps || '').split('|').forEach(function(s, i) {
+    const li = document.createElement('li');
+    li.setAttribute('data-n', (i + 1) + '.');
+    li.textContent = s.replace(/^\d+\.\s*/, '');
+    stepsEl.appendChild(li);
+  });
+  const urlEl = document.getElementById('verify-url');
+  urlEl.href = el.dataset.verifyUrl || '#';
+  urlEl.textContent = el.dataset.verifyUrl ? 'Siteye Git \u2192' : 'URL yok';
+  drawer.classList.add('open');
+  setTimeout(function() { el.scrollIntoView({behavior:'smooth', block:'center'}); }, 200);
+}
+
+function confirmVerify() {
+  if (_pendingEl) {
+    _pendingEl.classList.add('checked');
+    const key = _pendingEl.dataset.key;
+    if (key) localStorage.setItem(key, '1');
+    _pendingEl = null;
+  }
+  document.getElementById('verify-drawer').classList.remove('open');
+}
+
+function cancelVerify() {
+  _pendingEl = null;
+  document.getElementById('verify-drawer').classList.remove('open');
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') cancelVerify();
+});
+
+// Restore checked state
+document.querySelectorAll('[data-key]').forEach(function(el) {
+  if (localStorage.getItem(el.dataset.key) === '1') el.classList.add('checked');
+});
+
+// ── NOTES ──
+var _noteTimer = null;
+
+function saveNotes() {
+  clearTimeout(_noteTimer);
+  document.getElementById('notes-dot').classList.remove('saved');
+  document.getElementById('notes-status').textContent = 'yazılıyor\u2026';
+  _noteTimer = setTimeout(function() {
+    var val = document.getElementById('notes-area').value;
+    localStorage.setItem('ficila-notes', val);
+    var ts = new Date().toLocaleTimeString('tr-TR', {hour:'2-digit', minute:'2-digit'});
+    localStorage.setItem('ficila-notes-ts', ts);
+    document.getElementById('notes-dot').classList.add('saved');
+    document.getElementById('notes-status').textContent = 'kaydedildi ' + ts;
+    document.getElementById('notes-ts').textContent = 'Son kayıt: ' + ts;
+  }, 800);
+}
+
+function clearNotes() {
+  if (!confirm('T\u00fcm notlar silinecek. Emin misin?')) return;
+  document.getElementById('notes-area').value = '';
+  localStorage.removeItem('ficila-notes');
+  localStorage.removeItem('ficila-notes-ts');
+  document.getElementById('notes-status').textContent = 'kay\u0131t yok';
+  document.getElementById('notes-dot').classList.remove('saved');
+  document.getElementById('notes-ts').textContent = '';
+}
+
+(function() {
+  var saved = localStorage.getItem('ficila-notes');
+  var ts = localStorage.getItem('ficila-notes-ts');
+  if (saved) {
+    document.getElementById('notes-area').value = saved;
+    document.getElementById('notes-dot').classList.add('saved');
+    document.getElementById('notes-status').textContent = 'kaydedildi ' + (ts || '');
+    document.getElementById('notes-ts').textContent = ts ? 'Son kay\u0131t: ' + ts : '';
+  }
+})();
+
+// Copy command
+function copyCmd(text) {
+  navigator.clipboard.writeText(text).then(function() {
+    var t = document.getElementById('toast');
+    t.classList.add('show');
+    setTimeout(function() { t.classList.remove('show'); }, 2200);
+  });
+}
+
+// KPI bar animation on load
+setTimeout(function() {
+  document.querySelectorAll('.kpi-fill').forEach(function(b) {
+    var w = b.style.width;
+    b.style.width = '0%';
+    setTimeout(function() { b.style.width = w; }, 100);
+  });
+}, 300);
+
+// ──────────────────────────────────────────────
+// CANLI VERİ — A: Sheets · B: Meta API · C: Proxy
+// ──────────────────────────────────────────────
+var META_TOKEN = 'EAAXTBZAiFCK4BRGFDVZAC6fH23g2KESpCxU11cgf66fZBC45PRZCmaMSIRHvxGb0abosMFZCCBrtoK8B6KnAUmRa1F0IeEMkn78bdjnnhq6nQK8tHHM5gAZCPZBZC4glxzgfYQmyGIV2Rg6YsWBc1EmWflvqfHcjzBDzj1ykYknQRZAdjUa9GQO9LItAjP8qEeVZAYGjLJZCjpqs7k8NwZDZD'; // yenilendi 30 Mar 2026, son tarih ~28 May 2026
+var IG_TOKEN   = 'IGAASnfZCkZB2JlBZAFpLRHNzOEdSeGg4dEpyY0FtZAnVMcElUcFRiS3JJa3BHa000bFNjSjJYTmo5V2tnYUVxWi15YnN5NUsxSjJ3dXVsMnE4YzhWUUc3Q0NEZA2l5Smd1TjR2MW1OT0M2NS1SYlM4cUJGVW5hWTdncF9MQUE2bzF3SQZDZD'; // ficilacomtr, yenilendi 31 Mar 2026
+var IG_ACCOUNT_ID = '17841419102030759'; // ficilacomtr Instagram Business Account
+var META_ACT   = 'act_875332702913852';
+var SHEET_ID   = '14K6A1QrCSp-ndCwSiXZ4uIHG1CAQsAXgw8cF_f3XAJg';
+var PROXY_BASE = 'https://ficila-proxy.onrender.com';
+var PROXY_KEY  = 'ficila2026';
+
+// ── helpers ──
+function esc(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function setDot(id, state, label) {
+  var d = document.getElementById('dot-' + id);
+  var l = document.getElementById('lbl-' + id);
+  if (d) d.className = 'live-dot ' + state;
+  if (l && label) l.textContent = label;
+}
+function fmtN(n, dec) {
+  var v = parseFloat(n);
+  if (isNaN(v)) return '\u2014';
+  return v.toFixed(dec !== undefined ? dec : 0).replace('.', ',');
+}
+function fmtTL(n) {
+  var v = parseFloat(n);
+  if (isNaN(v)) return '\u2014';
+  return fmtN(v, 2) + '\u00a0\u20ba';
+}
+function fetchT(url, ms) {
+  var ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+  if (ctrl) setTimeout(function() { ctrl.abort(); }, ms || 8000);
+  return fetch(url, ctrl ? {signal: ctrl.signal} : {});
+}
+function setText(id, val) {
+  var el = document.getElementById(id);
+  if (el) el.textContent = val;
+}
+
+// Build a <table> DOM node from {headers:[str], rows:[[str]]} — no innerHTML
+function buildTable(spec) {
+  var tbl = document.createElement('table');
+  tbl.className = 'ltable';
+  var thead = tbl.createTHead();
+  var hr = thead.insertRow();
+  spec.headers.forEach(function(h) {
+    var th = document.createElement('th');
+    th.textContent = h;
+    hr.appendChild(th);
+  });
+  var tbody = tbl.createTBody();
+  spec.rows.forEach(function(row) {
+    var tr = tbody.insertRow();
+    row.forEach(function(cell) {
+      var td = tr.insertCell();
+      if (cell && typeof cell === 'object') {
+        td.className = cell.cls || '';
+        td.style.cssText = cell.style || '';
+        td.title = cell.title || '';
+        td.textContent = cell.val !== undefined ? cell.val : '';
+      } else {
+        td.className = 'mono';
+        td.textContent = cell !== undefined ? String(cell) : '';
+      }
+    });
+  });
+  return tbl;
+}
+
+function setContainer(id, node) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  while (el.firstChild) el.removeChild(el.firstChild);
+  el.appendChild(node);
+}
+
+function makeMsg(text, isErr) {
+  var div = document.createElement('div');
+  div.className = isErr ? 'live-err-msg' : 'live-placeholder';
+  div.textContent = text;
+  if (isErr) {
+    var br = document.createElement('br');
+    div.appendChild(br);
+    div.appendChild(br.cloneNode());
+    var hint = document.createElement('span');
+    hint.style.color = 'var(--dim)';
+    hint.textContent = 'Terminal: python3 ~/Desktop/ficila-proxy.py';
+    div.appendChild(hint);
+  }
+  return div;
+}
+
+function updateLiveBadge() {
+  var ts = new Date().toLocaleTimeString('tr-TR', {hour:'2-digit', minute:'2-digit'});
+  setText('live-ts', 'Son: ' + ts);
+  var badge = document.getElementById('live-section-badge');
+  if (badge) { badge.textContent = ts + ' güncellendi'; badge.className = 'chip chip-green'; }
+}
+
+// ── B: Meta Graph API ──
+function loadMeta() {
+  setDot('meta', 'spin', 'Meta API yükleniyor\u2026');
+  var url = 'https://graph.facebook.com/v19.0/' + META_ACT + '/insights'
+    + '?fields=campaign_name,impressions,clicks,spend,ctr,cpc,reach'
+    + '&date_preset=last_7d&level=campaign'
+    + '&access_token=' + META_TOKEN;
+  fetchT(url, 10000)
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.error) {
+        setDot('meta', 'err', 'Meta: hata (' + ((data.error.code || '') + ')').substring(0, 20));
+        var m = makeMsg('Meta API hatası: ' + (data.error.message || 'bilinmiyor'), true);
+        setContainer('meta-live-container', m);
+        return;
+      }
+      var rows = data.data || [];
+      if (!rows.length) {
+        setDot('meta', 'err', 'Meta: gösterim yok (aktif)');
+        setContainer('meta-live-container', makeMsg('Veri yok \u2014 kampanyalar aktif ama hen\xfcz g\xf6sterim yok.', false));
+        return;
+      }
+      var totalSpend = 0, totalImpr = 0;
+      rows.forEach(function(r) { totalSpend += parseFloat(r.spend||0); totalImpr += parseInt(r.impressions||0); });
+      var avgCpm = totalImpr > 0 ? totalSpend / totalImpr * 1000 : 0;
+
+      var cpmEl = document.getElementById('kpi-meta-cpm');
+      if (cpmEl) {
+        cpmEl.textContent = totalSpend > 0 ? fmtN(avgCpm,1)+'\u00a0\u20ba' : '0\u00a0\u20ba';
+        cpmEl.style.color = avgCpm<60?'var(--green)':avgCpm<100?'var(--yellow)':'var(--red)';
+      }
+      setText('kpi-meta-cpm-target', 'Hedef: <60 \u20ba \u00b7 Harcama: ' + fmtTL(totalSpend));
+
+      var totalClicks = 0, totalReach = 0;
+      rows.forEach(function(r) { totalClicks += parseInt(r.clicks||0); totalReach += parseInt(r.reach||0); });
+      var avgCtr = totalImpr > 0 ? totalClicks/totalImpr*100 : 0;
+
+      var wrap = document.createElement('div');
+      var grid = document.createElement('div');
+      grid.className = 'cad-row';
+      [
+        ['Gösterim', fmtN(totalImpr)],
+        ['Tık',      fmtN(totalClicks)],
+        ['Harcama',  fmtTL(totalSpend)],
+        ['CTR',      '%' + fmtN(avgCtr,2)]
+      ].forEach(function(pair) {
+        var item = document.createElement('div');
+        item.className = 'cad-item';
+        var lbl = document.createElement('span');
+        lbl.textContent = pair[0];
+        var val = document.createElement('strong');
+        val.textContent = pair[1];
+        item.appendChild(lbl);
+        item.appendChild(val);
+        grid.appendChild(item);
+      });
+      wrap.appendChild(grid);
+      var camps = document.createElement('div');
+      camps.className = 'cad-campaigns';
+      rows.forEach(function(r) {
+        var b = document.createElement('b');
+        b.textContent = (r.campaign_name||'').replace('Meta_','').replace('_Nisan2026','');
+        camps.appendChild(b);
+        camps.appendChild(document.createTextNode(': ' + fmtN(r.impressions) + ' gösterim · ' + fmtTL(r.spend) + '   '));
+      });
+      wrap.appendChild(camps);
+      setContainer('meta-live-container', wrap);
+      // Sosyal bölümdeki Meta Ads kartını da güncelle
+      var socialWrap = document.createElement('div');
+      socialWrap.style.cssText = 'display:flex;flex-direction:column;gap:8px;';
+      [
+        ['Gösterim', fmtN(totalImpr),        'var(--text)'],
+        ['Tık',      fmtN(totalClicks),       'var(--text)'],
+        ['Harcama',  fmtTL(totalSpend),       'var(--green)'],
+        ['CTR',      '%' + fmtN(avgCtr,2),   avgCtr>=1.5?'var(--green)':avgCtr>=0.8?'var(--yellow)':'var(--red)']
+      ].forEach(function(pair) {
+        var row = document.createElement('div');
+        row.style.cssText = 'display:flex;justify-content:space-between;';
+        var lbl = document.createElement('span');
+        lbl.style.cssText = 'font-size:12px;color:var(--dim);';
+        lbl.textContent = pair[0];
+        var val = document.createElement('span');
+        val.style.cssText = 'font-size:13px;font-weight:600;color:' + pair[2] + ';';
+        val.textContent = pair[1];
+        row.appendChild(lbl); row.appendChild(val);
+        socialWrap.appendChild(row);
+      });
+      var socialNote = document.createElement('div');
+      socialNote.style.cssText = 'font-size:11px;color:var(--dim);margin-top:4px;padding-top:8px;border-top:1px solid var(--border);';
+      socialNote.textContent = 'Son 7 gün · Canlı · Meta Graph API';
+      socialWrap.appendChild(socialNote);
+      var sc = document.getElementById('meta-social-container');
+      if (sc) { while(sc.firstChild) sc.removeChild(sc.firstChild); sc.appendChild(socialWrap); }
+      setDot('meta', 'ok', 'Meta: ' + fmtTL(totalSpend) + ' harcama');
+      updateLiveBadge();
+    })
+    .catch(function(e) {
+      setDot('meta', 'err', 'Meta: ba\u011flant\u0131 hatas\u0131');
+      setContainer('meta-live-container', makeMsg('Ba\u011flant\u0131 hatas\u0131: ' + e.message, true));
+    });
+}
+
+// ── C: Google Ads Proxy ──
+function loadProxy() {
+  setDot('proxy', 'spin', 'Google Ads Proxy\u2026');
+  fetchT(PROXY_BASE + '/google-ads' + (PROXY_KEY ? '?key='+PROXY_KEY : ''), 6000)
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.error) {
+        setDot('proxy', 'err', 'Proxy: hata');
+        setContainer('gads-live-container', makeMsg(data.error, true));
+        return;
+      }
+      var campaigns = [];
+      var list = Array.isArray(data) ? data : [];
+      list.forEach(function(batch) {
+        if (!batch.results) return;
+        batch.results.forEach(function(r) {
+          var m = r.metrics || {};
+          var c = r.campaign || {};
+          campaigns.push({
+            name:   c.name || '\u2014',
+            impr:   parseInt(m.impressions || 0),
+            clicks: parseInt(m.clicks || 0),
+            spend:  parseInt(m.costMicros || m.cost_micros || 0) / 1e6,
+            cpc:    parseInt(m.averageCpc || m.average_cpc || 0) / 1e6
+          });
+        });
+      });
+      if (!campaigns.length) {
+        setDot('proxy', 'err', 'Google Ads: veri yok');
+        setContainer('gads-live-container', makeMsg('Kampanya verisi yok \u2014 kampanyalar hen\xfcz ba\u015flatilmad\u0131', false));
+        return;
+      }
+      var totalSpend = campaigns.reduce(function(a,c){ return a+c.spend; }, 0);
+      var active     = campaigns.filter(function(c){ return c.clicks>0; });
+      var avgCpc     = active.length ? active.reduce(function(a,c){ return a+c.cpc; },0)/active.length : 0;
+
+      var cpcEl = document.getElementById('kpi-gads-cpc');
+      if (cpcEl) {
+        cpcEl.textContent = avgCpc>0 ? fmtTL(avgCpc) : '\u2014';
+        cpcEl.style.color = avgCpc<5?'var(--green)':avgCpc<8?'var(--yellow)':'var(--red)';
+      }
+      setText('kpi-gads-cpc-target', 'Hedef: <5 \u20ba \u00b7 Harcama: ' + fmtTL(totalSpend));
+
+      var cpcColor = avgCpc<5?'var(--green)':avgCpc<8?'var(--yellow)':'var(--red)';
+
+      // Compact: büyük CPC + optimizasyon notu
+      var wrap = document.createElement('div');
+      wrap.style.cssText = 'display:flex;flex-direction:column;gap:10px;';
+
+      // Büyük CPC sayısı
+      var cpcRow = document.createElement('div');
+      cpcRow.style.cssText = 'display:flex;align-items:baseline;gap:10px;';
+      var cpcBig = document.createElement('span');
+      cpcBig.style.cssText = 'font-size:32px;font-weight:700;font-family:"Roboto Slab",serif;color:'+cpcColor+';line-height:1;';
+      cpcBig.textContent = avgCpc>0 ? fmtTL(avgCpc) : '\u2014';
+      var cpcMeta = document.createElement('span');
+      cpcMeta.style.cssText = 'font-size:11px;color:var(--muted);line-height:1.4;';
+      cpcMeta.textContent = 'Ort. CPC\nHedef <5 \u20ba';
+      cpcMeta.style.whiteSpace = 'pre';
+      cpcRow.appendChild(cpcBig);
+      cpcRow.appendChild(cpcMeta);
+      wrap.appendChild(cpcRow);
+
+      // Optimizasyon notu
+      var note = document.createElement('div');
+      note.style.cssText = 'font-size:12px;padding:8px 12px;background:var(--surface3);border-radius:6px;border-left:3px solid '+cpcColor+';line-height:1.5;';
+      if (avgCpc > 8) {
+        note.textContent = 'KR\u0130T\u0130K \u2014 Max CPC bid\'i 5 \u20ba\'ye d\xfc\u015f\xfcr. Broad match keyword\'leri kald\u0131r. Negatif arama terimi listesi olu\u015ftur.';
+      } else if (avgCpc > 5) {
+        note.textContent = 'Y\xfcksek \u2014 Teklif stratejisini Manuel CPC\'ye \xe7evir. Search terms raporu inceleyip alakas\u0131z sorguları negatife ekle.';
+      } else if (avgCpc > 0) {
+        note.textContent = 'Hedefte \u2212 Mevcut stratejiyi koru. 0 g\xf6sterimli kampanyalar i\xe7in b\xfct\xe7e artır.';
+      } else {
+        note.textContent = 'Henüz veri yok \u2014 kampanya gösterim almadı.';
+      }
+      wrap.appendChild(note);
+
+      // 0 gösterimli kampanyalar
+      var zero = campaigns.filter(function(c){ return c.impr === 0; });
+      if (zero.length) {
+        var zeroDiv = document.createElement('div');
+        zeroDiv.className = 'cad-campaigns';
+        var zb = document.createElement('b');
+        zb.style.color = 'var(--yellow)';
+        zb.textContent = '0 Gösterim: ';
+        zeroDiv.appendChild(zb);
+        zeroDiv.appendChild(document.createTextNode(zero.map(function(c){ return c.name.replace('[SEARCH] ',''); }).join(', ')));
+        wrap.appendChild(zeroDiv);
+      }
+
+      // Canlı öneri güncelle
+      var recEl = document.getElementById('ads-rec-cpc');
+      if (recEl && avgCpc > 0) {
+        recEl.textContent = 'CPC: ' + fmtTL(avgCpc) + (avgCpc>8?' \uD83D\uDD34 KR\u0130T\u0130K':avgCpc>5?' \u26A0\uFE0F Y\xfcksek':' \u2705 Hedefte') + ' \u2014 ' + (avgCpc>8?'Max CPC 5 \u20ba\'ye d\xfc\u015f\xfcr, negatif kelime ekle':avgCpc>5?'Manuel CPC\'ye ge\xe7, search terms gözden ge\xe7ir':'Stratejiyi koru, 0-g\xf6sterim kampanyalara bak');
+      }
+      // Ajan timestamp güncelle
+      var ts = document.getElementById('agent-update-ts');
+      if (ts) ts.textContent = 'Son kontrol: ' + new Date().toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'});
+
+      setContainer('gads-live-container', wrap);
+      setDot('proxy', 'ok', 'Google Ads: ' + fmtTL(totalSpend));
+      updateLiveBadge();
+    })
+    .catch(function(e) {
+      var noConn = !e.message || e.message.match(/fetch|network|abort|Failed/i);
+      setDot('proxy', 'err', noConn ? 'Proxy \xe7al\u0131\u015fm\u0131yor' : 'Proxy hatas\u0131');
+      setContainer('gads-live-container', makeMsg(noConn ? 'Proxy ba\u011flant\u0131 kurulamad\u0131.' : 'Hata: ' + e.message, true));
+    });
+}
+
+// ── A: Sheets (proxy üzerinden) ──
+function loadSheets() {
+  setDot('sheets', 'spin', 'Sheets kontrol ediliyor\u2026');
+  fetchT(PROXY_BASE + '/sheets' + (PROXY_KEY ? '?key='+PROXY_KEY : ''), 6000)
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.error) setDot('sheets', 'err', 'Sheets: ' + data.error.substring(0,30));
+      else if (data.values && data.values.length) setDot('sheets', 'ok', 'Sheets: ' + (data.values.length-1) + ' sat\u0131r');
+      else setDot('sheets', 'err', 'Sheets: bo\u015f veri');
+    })
+    .catch(function() { setDot('sheets', 'err', 'Proxy \xe7al\u0131\u015fm\u0131yor'); });
+}
+
+// ── D: Facebook Sayfa + Instagram ──
+function loadSocial() {
+  var badge = document.getElementById('social-badge');
+  if (badge) { badge.textContent = 'Yükleniyor\u2026'; badge.className = 'chip chip-yellow'; }
+
+  // Facebook sayfa listesi al (access_token = sayfa tokenı, Instagram için gerekli)
+  fetchT('https://graph.facebook.com/v19.0/me/accounts?fields=id,name,fan_count,followers_count,access_token&access_token=' + META_TOKEN, 10000)
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.error || !data.data || !data.data.length) {
+        setFbContainer(makeMsg('FB sayfa verisi alınamadı: ' + ((data.error && data.error.message) || 'bilinmiyor'), true));
+        setIgContainer(makeMsg('FB sayfa bağlantısı kurulamadı', true));
+        return;
+      }
+      var page = data.data.find(function(p) {
+        return (p.name || '').toLowerCase().replace(/\s/g,'').indexOf('ficila') !== -1 ||
+               (p.name || '').toLowerCase().replace(/\s/g,'').indexOf('f\u0131\u00e7\u0131la') !== -1;
+      }) || data.data[0];
+      var fans = page.fan_count || page.followers_count || '—';
+      // FB card güncelle
+      var fbDiv = document.createElement('div');
+      fbDiv.style.cssText = 'display:flex;flex-direction:column;gap:8px;';
+      var rows = [
+        ['Takipçi', String(fans), 'var(--gold)', true],
+        ['Sayfa', esc(page.name || 'Ficila.com.tr'), 'var(--gold)', false]
+      ];
+      rows.forEach(function(r) {
+        var row = document.createElement('div');
+        row.style.cssText = 'display:flex;justify-content:space-between;align-items:center;';
+        var lbl = document.createElement('span');
+        lbl.style.cssText = 'font-size:12px;color:var(--dim);';
+        lbl.textContent = r[0];
+        var val = document.createElement('span');
+        val.style.cssText = 'font-size:' + (r[3] ? '20px;font-weight:700;font-family:"Roboto Slab",serif;' : '12px;font-weight:600;') + 'color:' + r[2] + ';';
+        val.textContent = r[1];
+        row.appendChild(lbl);
+        row.appendChild(val);
+        fbDiv.appendChild(row);
+      });
+      var note = document.createElement('div');
+      note.style.cssText = 'font-size:11px;color:var(--dim);margin-top:4px;padding-top:8px;border-top:1px solid var(--border);';
+      note.textContent = 'Canlı · Meta Graph API';
+      fbDiv.appendChild(note);
+      setFbContainer(fbDiv);
+      if (badge) { badge.textContent = 'Canlı · ' + new Date().toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'}); badge.className = 'chip chip-green'; }
+
+      // Instagram — profil + son gönderiler
+      fetchT('https://graph.instagram.com/me?fields=id,username,followers_count,media_count,biography,profile_picture_url&access_token=' + IG_TOKEN, 10000)
+        .then(function(r2) { return r2.json(); })
+        .then(function(ig) {
+          if (ig.error) { setIgContainer(makeIgMsg('Instagram: ' + ig.error.message, true)); return; }
+          // Son 5 gönderi like toplamı
+          return fetchT('https://graph.instagram.com/me/media?fields=id,media_type,timestamp,like_count,comments_count,permalink&limit=5&access_token=' + IG_TOKEN, 10000)
+            .then(function(r3) { return r3.json(); })
+            .then(function(media) {
+              var posts = (media.data || []);
+              var totalLikes = posts.reduce(function(a, p) { return a + (p.like_count || 0); }, 0);
+              var totalComments = posts.reduce(function(a, p) { return a + (p.comments_count || 0); }, 0);
+
+              var igDiv = document.createElement('div');
+              igDiv.style.cssText = 'display:flex;flex-direction:column;gap:8px;';
+
+              // Profil satırı: foto + kullanıcı adı
+              var profileRow = document.createElement('div');
+              profileRow.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:2px;';
+              if (ig.profile_picture_url) {
+                var pic = document.createElement('img');
+                pic.src = ig.profile_picture_url;
+                pic.style.cssText = 'width:32px;height:32px;border-radius:50%;border:1px solid var(--border);';
+                profileRow.appendChild(pic);
+              }
+              var uname = document.createElement('span');
+              uname.style.cssText = 'font-size:12px;font-weight:600;color:var(--text);';
+              uname.textContent = '@' + esc(ig.username || '');
+              profileRow.appendChild(uname);
+              igDiv.appendChild(profileRow);
+
+              // Metrikler
+              var igRows = [
+                ['Takipçi',       String(ig.followers_count || '—'), 'var(--gold)', true],
+                ['Gönderi',       String(ig.media_count || '—'),     'var(--text)', false],
+                ['Son 5 like',    String(totalLikes),                 'var(--green)', false],
+                ['Son 5 yorum',   String(totalComments),              'var(--muted)', false],
+              ];
+              igRows.forEach(function(r) {
+                var row = document.createElement('div');
+                row.style.cssText = 'display:flex;justify-content:space-between;align-items:center;';
+                var lbl = document.createElement('span');
+                lbl.style.cssText = 'font-size:12px;color:var(--dim);';
+                lbl.textContent = r[0];
+                var val = document.createElement('span');
+                val.style.cssText = 'font-size:' + (r[3] ? '20px;font-weight:700;font-family:"Roboto Slab",serif;' : '12px;font-weight:500;') + 'color:' + r[2] + ';';
+                val.textContent = r[1];
+                row.appendChild(lbl); row.appendChild(val);
+                igDiv.appendChild(row);
+              });
+
+              // Son gönderi linki
+              if (posts.length) {
+                var lastPost = posts[0];
+                var postRow = document.createElement('div');
+                postRow.style.cssText = 'margin-top:4px;padding-top:8px;border-top:1px solid var(--border);';
+                var postLink = document.createElement('a');
+                postLink.href = lastPost.permalink;
+                postLink.target = '_blank';
+                postLink.style.cssText = 'font-size:11px;color:var(--gold);text-decoration:none;';
+                postLink.textContent = 'Son gönderi → ' + new Date(lastPost.timestamp).toLocaleDateString('tr-TR');
+                postRow.appendChild(postLink);
+                igDiv.appendChild(postRow);
+              }
+
+              var igNote = document.createElement('div');
+              igNote.style.cssText = 'font-size:11px;color:var(--dim);';
+              igNote.textContent = 'Canlı · Instagram Graph API';
+              igDiv.appendChild(igNote);
+              setIgContainer(igDiv);
+            });
+        })
+        .catch(function(e) { setIgContainer(makeIgMsg('Instagram verisi alınamadı', true)); });
+    })
+    .catch(function() {
+      setFbContainer(makeMsg('Meta API bağlantı hatası', true));
+      setIgContainer(makeIgMsg('Meta API bağlantı hatası', true));
+    });
+}
+
+function setFbContainer(node) {
+  var el = document.getElementById('fb-live-container');
+  if (!el) return;
+  while (el.firstChild) el.removeChild(el.firstChild);
+  el.appendChild(node);
+}
+function setIgContainer(node) {
+  var el = document.getElementById('ig-live-container');
+  if (!el) return;
+  while (el.firstChild) el.removeChild(el.firstChild);
+  el.appendChild(node);
+}
+function makeIgMsg(text, isErr) {
+  var div = document.createElement('div');
+  div.style.cssText = 'font-size:12px;color:' + (isErr ? 'var(--red)' : 'var(--yellow)') + ';';
+  div.textContent = text;
+  return div;
+}
+
+// ── E: KPI Kartları (GA4 + GSC + WooCommerce) ──
+function loadKpis() {
+  // WooCommerce → Aylık Satış
+  fetchT(PROXY_BASE + '/woocommerce' + (PROXY_KEY ? '?key='+PROXY_KEY : ''), 10000)
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (d.error) { setText('kpi-sales', '—'); setText('kpi-sales-target', d.error.substring(0,40)); return; }
+      var gross = d.gross_sales || 0;
+      setText('kpi-sales', fmtTL(gross));
+      setText('kpi-sales-target', d.orders + ' sipariş · Net: ' + fmtTL(d.net_revenue));
+      var pct = Math.min(100, Math.round(gross / 100000 * 100));
+      var bar = document.getElementById('kpi-sales-bar');
+      if (bar) bar.style.width = pct + '%';
+      var el = document.getElementById('kpi-sales');
+      if (el) el.style.color = gross > 0 ? 'var(--green)' : 'var(--dim)';
+    })
+    .catch(function() { setText('kpi-sales', '—'); setText('kpi-sales-target', 'Proxy çalışmıyor'); });
+
+  // GA4 → Organik Oturum + Shopping Geliri
+  fetchT(PROXY_BASE + '/ga4' + (PROXY_KEY ? '?key='+PROXY_KEY : ''), 10000)
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (d.error) {
+        setText('kpi-organic', '—'); setText('kpi-organic-target', d.error.substring(0,40));
+        setText('kpi-shopping', '—'); setText('kpi-shopping-target', d.error.substring(0,40));
+        return;
+      }
+      setText('kpi-organic', String(d.organic_sessions || 0));
+      setText('kpi-organic-target', 'Organik arama · %' + (d.organic_pct||0) + ' pay · Toplam: ' + (d.total_sessions||0));
+      var orgPct = Math.min(100, Math.round((d.organic_pct||0) * 2));
+      var orgBar = document.getElementById('kpi-organic-bar');
+      if (orgBar) orgBar.style.width = orgPct + '%';
+
+      setText('kpi-shopping', fmtTL(d.shopping_revenue || 0));
+      setText('kpi-shopping-target', 'Shopping kanalı · GA4 cari ay');
+      var shopBar = document.getElementById('kpi-shopping-bar');
+      if (shopBar) shopBar.style.width = Math.min(100, Math.round((d.shopping_revenue||0) / 200000 * 100)) + '%';
+    })
+    .catch(function() {
+      setText('kpi-organic', '—'); setText('kpi-organic-target', 'Proxy çalışmıyor');
+      setText('kpi-shopping', '—'); setText('kpi-shopping-target', 'Proxy çalışmıyor');
+    });
+
+  // GSC → Organik CTR
+  fetchT(PROXY_BASE + '/gsc' + (PROXY_KEY ? '?key='+PROXY_KEY : ''), 10000)
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (d.error) { setText('kpi-ctr', '—'); setText('kpi-ctr-target', d.error.substring(0,40)); return; }
+      setText('kpi-ctr', '%' + (d.ctr || 0));
+      setText('kpi-ctr-target', d.clicks + ' tık · ' + d.impressions + ' gösterim · Pos: ' + d.position);
+      var ctr = d.ctr || 0;
+      var ctrBar = document.getElementById('kpi-ctr-bar');
+      if (ctrBar) ctrBar.style.width = Math.min(100, Math.round(ctr / 5 * 100)) + '%';
+      var el = document.getElementById('kpi-ctr');
+      if (el) el.style.color = ctr >= 5 ? 'var(--green)' : ctr >= 2 ? 'var(--yellow)' : 'var(--red)';
+    })
+    .catch(function() { setText('kpi-ctr', '—'); setText('kpi-ctr-target', 'Proxy çalışmıyor'); });
+}
+
+function loadAllLive() { loadMeta(); loadProxy(); loadSheets(); loadSocial(); loadKpis(); }
+
+function refreshAll(btn) {
+  if (btn) { btn.classList.add('spinning'); btn.disabled = true; }
+  loadAllLive();
+  setTimeout(function() {
+    if (btn) { btn.classList.remove('spinning'); btn.disabled = false; }
+  }, 4000);
+}
+
+// İlk yükleme + otomatik yenileme
+setTimeout(loadAllLive, 500);
+setInterval(loadAllLive, 5 * 60 * 1000);
+</script>
+</body>
+</html>
