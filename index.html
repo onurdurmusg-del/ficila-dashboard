@@ -699,6 +699,27 @@ footer {
 .ltable tr:last-child td { border-bottom:none; }
 .live-placeholder { text-align:center; color:var(--dim); padding:16px; font-size:11px; font-style:italic; }
 .live-err-msg { padding:8px 12px; background:var(--red-dim); border:1px solid rgba(244,63,94,.3); border-radius:6px; font-size:11px; color:var(--red); line-height:1.5; }
+
+/* ── KPI DELTA ── */
+.kpi-delta { display:inline-block; font-size:10px; font-weight:700; padding:2px 5px; border-radius:3px; margin-left:6px; vertical-align:middle; letter-spacing:.02em; }
+.kpi-delta.up   { color:var(--green); background:var(--green-dim); }
+.kpi-delta.down { color:var(--red);   background:var(--red-dim); }
+.kpi-delta.flat { color:var(--muted); }
+
+/* ── ALERT ITEMS ── */
+.alert-items { display:flex; flex-direction:column; gap:8px; }
+.alert-item  { display:flex; align-items:center; gap:12px; padding:10px 16px; background:var(--red-dim); border:1px solid rgba(244,63,94,.2); border-left:3px solid var(--red); border-radius:var(--r); font-size:12px; line-height:1.5; }
+.alert-item.yellow { background:var(--yellow-dim); border-color:rgba(251,191,36,.2); border-left-color:var(--yellow); }
+.alert-item.green  { background:var(--green-dim);  border-color:rgba(62,207,142,.2);  border-left-color:var(--green); }
+.alert-item.hidden { display:none !important; }
+.alert-item-icon { font-size:16px; flex-shrink:0; line-height:1; }
+.alert-item-body { flex:1; color:var(--muted); }
+.alert-item-body strong { font-weight:600; color:var(--text); }
+
+/* ── TASK FAILED ── */
+.check-item.failed .check-box { background:var(--red-dim); color:var(--red); border-color:rgba(244,63,94,.5); }
+.task-fail-badge { display:inline-flex; align-items:center; font-size:10px; font-weight:700; color:var(--red); background:var(--red-dim); border:1px solid rgba(244,63,94,.35); border-radius:3px; padding:1px 6px; margin-left:6px; }
+.check-item.deleting { transition:opacity .45s, transform .45s; opacity:0; transform:translateX(20px); pointer-events:none; }
 </style>
 </head>
 <body>
@@ -750,15 +771,6 @@ footer {
   </div>
 </header>
 
-<!-- ALERT -->
-<div class="alert-band">
-  <span class="alert-icon">⚠️</span>
-  <span class="alert-text">
-    <strong>Aktif İzleme:</strong>
-    Google Ads Nitro Kahve CPC 10.24 ₺ — hedef &lt;5 ₺, alarm &gt;8 ₺ · Meta token yenileme: <strong>28 Mayıs 2026</strong>
-  </span>
-  <button class="alert-cta" onclick="copyCmd('ficila Google Ads Nitro Kahve kampanyasının CPC optimizasyonunu yap')">Optimize Et →</button>
-</div>
 
 <!-- LIVE DATA STRIP -->
 <div class="live-strip">
@@ -772,6 +784,32 @@ footer {
 
 <main>
 
+  <!-- KRİTİK UYARILAR -->
+  <section class="fade-up">
+    <div class="section-hdr">
+      <span class="section-title" style="color:var(--red)">Kritik Uyarılar</span>
+      <span id="kritik-count" class="chip chip-red">2 aktif</span>
+    </div>
+    <div class="alert-items" id="kritik-list">
+      <div class="alert-item" id="kritik-cpc-item">
+        <span class="alert-item-icon">🔴</span>
+        <div class="alert-item-body">
+          <strong>Google Ads CPC Alarmı</strong> — Nitro Kahve kampanyası: <strong id="kritik-cpc-val">10,24 ₺</strong> (hedef &lt;5 ₺, alarm eşiği &gt;8 ₺)
+          <br>Aksiyon: Max CPC bid'i düşür → Negatif anahtar kelime listesi oluştur
+        </div>
+        <button class="alert-cta" onclick="copyCmd('ficila Google Ads Nitro Kahve kampanyasının CPC optimizasyonunu yap')">Optimize →</button>
+      </div>
+      <div class="alert-item yellow" id="kritik-token-item">
+        <span class="alert-item-icon">⏰</span>
+        <div class="alert-item-body">
+          <strong>Meta API Token Yenileme</strong> — Son tarih: <strong>28 Mayıs 2026</strong>
+          <br>14 Mayıs'tan önce developers.facebook.com/tools/explorer → yeni token oluştur
+        </div>
+        <a class="alert-cta" href="https://developers.facebook.com/tools/explorer" target="_blank">Yenile →</a>
+      </div>
+    </div>
+  </section>
+
   <!-- KPI BAND -->
   <section class="fade-up">
     <div class="section-hdr">
@@ -781,107 +819,97 @@ footer {
     <div class="kpi-band">
       <div class="kpi-card">
         <div class="kpi-label">Aylık Satış</div>
-        <div class="kpi-value" style="color:var(--green)" id="kpi-sales">—</div>
+        <div class="kpi-value" style="color:var(--green)" id="kpi-sales">—<span class="kpi-delta" id="kpi-sales-delta"></span></div>
         <div class="kpi-target" id="kpi-sales-target">Yükleniyor…</div>
         <div class="kpi-bar"><div class="kpi-fill" id="kpi-sales-bar" style="width:0%; background:var(--green)"></div></div>
       </div>
       <div class="kpi-card">
         <div class="kpi-label">Organik Trafik</div>
-        <div class="kpi-value" style="color:var(--blue)" id="kpi-organic">—</div>
+        <div class="kpi-value" style="color:var(--blue)" id="kpi-organic">—<span class="kpi-delta" id="kpi-organic-delta"></span></div>
         <div class="kpi-target" id="kpi-organic-target">Yükleniyor…</div>
         <div class="kpi-bar"><div class="kpi-fill" id="kpi-organic-bar" style="width:0%; background:var(--blue)"></div></div>
       </div>
       <div class="kpi-card">
         <div class="kpi-label">Shopping Geliri</div>
-        <div class="kpi-value" style="color:var(--purple)" id="kpi-shopping">—</div>
+        <div class="kpi-value" style="color:var(--purple)" id="kpi-shopping">—<span class="kpi-delta" id="kpi-shopping-delta"></span></div>
         <div class="kpi-target" id="kpi-shopping-target">Yükleniyor…</div>
         <div class="kpi-bar"><div class="kpi-fill" id="kpi-shopping-bar" style="width:0%; background:var(--purple)"></div></div>
       </div>
       <div class="kpi-card">
         <div class="kpi-label">Organik CTR</div>
-        <div class="kpi-value" style="color:var(--yellow)" id="kpi-ctr">—</div>
+        <div class="kpi-value" style="color:var(--yellow)" id="kpi-ctr">—<span class="kpi-delta" id="kpi-ctr-delta"></span></div>
         <div class="kpi-target" id="kpi-ctr-target">Yükleniyor…</div>
         <div class="kpi-bar"><div class="kpi-fill" id="kpi-ctr-bar" style="width:0%; background:var(--yellow)"></div></div>
       </div>
       <div class="kpi-card">
         <div class="kpi-label">Meta CPM</div>
-        <div class="kpi-value" style="color:var(--green)" id="kpi-meta-cpm">—</div>
+        <div class="kpi-value" style="color:var(--green)" id="kpi-meta-cpm">—<span class="kpi-delta" id="kpi-meta-cpm-delta"></span></div>
         <div class="kpi-target" id="kpi-meta-cpm-target">Hedef: &lt;60 ₺ · Kampanya aktif</div>
         <div class="kpi-bar"><div class="kpi-fill" style="width:0%; background:var(--dim)"></div></div>
       </div>
       <div class="kpi-card">
         <div class="kpi-label">Google Ads CPC</div>
-        <div class="kpi-value" style="color:var(--red)" id="kpi-gads-cpc">10,24 ₺</div>
+        <div class="kpi-value" style="color:var(--red)" id="kpi-gads-cpc">10,24 ₺<span class="kpi-delta" id="kpi-gads-cpc-delta"></span></div>
         <div class="kpi-target" id="kpi-gads-cpc-target">Hedef: &lt;5 ₺ · 🔴 Alarm &gt;8 ₺</div>
         <div class="kpi-bar"><div class="kpi-fill" style="width:100%; background:var(--red)"></div></div>
       </div>
     </div>
   </section>
 
-  <!-- SOSYAL MEDYA -->
+  <!-- SOSYAL MEDYA & REKLAMLAR -->
   <section class="fade-up">
     <div class="section-hdr">
-      <span class="section-title">Sosyal Medya</span>
+      <span class="section-title">Sosyal Medya &amp; Reklamlar</span>
       <span id="social-badge" class="chip chip-dim">Yükleniyor…</span>
     </div>
     <div class="live-2col" style="grid-template-columns:1fr 1fr 1fr; gap:14px;">
+
+      <!-- Facebook + Meta Ads -->
       <div class="live-card">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
           <svg width="20" height="20" viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#1877F2"/><path d="M14.8 12H13v7h-2.5v-7H9V9.5h1.5V8.1C10.5 6.2 11.6 5 13.6 5c.9 0 1.8.1 1.8.1v2h-1c-1 0-1.3.5-1.3 1.2v1.2H15.3L14.8 12z" fill="white"/></svg>
           <span style="font-size:11px;font-weight:700;color:#1877F2;letter-spacing:.08em;">FACEBOOK</span>
         </div>
         <div id="fb-live-container">
-          <div style="display:flex; flex-direction:column; gap:8px;">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-              <span style="font-size:12px; color:var(--dim);">Takipçi</span>
-              <span style="font-size:20px; font-weight:700; color:var(--gold); font-family:'Roboto Slab',serif;">524</span>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:12px;color:var(--dim);">Takipçi</span>
+              <span style="font-size:20px;font-weight:700;color:var(--gold);font-family:'Roboto Slab',serif;">524</span>
             </div>
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-              <span style="font-size:12px; color:var(--dim);">Sayfa</span>
-              <span style="font-size:12px; color:var(--gold);">Ficila.com.tr</span>
-            </div>
-            <div style="font-size:11px; color:var(--dim); margin-top:4px; padding-top:8px; border-top:1px solid var(--border);">
-              Yenile butonuna bas → canlı veri çekilecek
-            </div>
+            <div style="font-size:11px;color:var(--dim);padding-top:6px;border-top:1px solid var(--border);">Yenile → canlı veri</div>
           </div>
         </div>
-      </div>
-      <div class="live-card">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
-          <svg width="20" height="20" viewBox="0 0 24 24"><rect width="24" height="24" rx="5" fill="#0081FB"/><path d="M4 14.5c0 1.9 1.5 3.5 3.3 3.5 1 0 1.8-.4 2.4-1.1L12 14l2.3 2.9c.6.7 1.4 1.1 2.4 1.1 1.8 0 3.3-1.6 3.3-3.5 0-1-.4-1.9-1-2.5L16.5 9c-.5-.6-1.2-.9-2-.9s-1.5.3-2 .9L12 10l-.5-.9c-.5-.6-1.2-.9-2-.9s-1.5.3-2 .9L5 12c-.6.6-1 1.5-1 2.5z" fill="white"/></svg>
-          <span style="font-size:11px;font-weight:700;color:#0081FB;letter-spacing:.08em;">META ADS · MART 2026</span>
+        <div style="border-top:1px solid var(--border2);margin:12px 0 10px;"></div>
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
+          <svg width="14" height="14" viewBox="0 0 24 24"><rect width="24" height="24" rx="5" fill="#0081FB"/><path d="M4 14.5c0 1.9 1.5 3.5 3.3 3.5 1 0 1.8-.4 2.4-1.1L12 14l2.3 2.9c.6.7 1.4 1.1 2.4 1.1 1.8 0 3.3-1.6 3.3-3.5 0-1-.4-1.9-1-2.5L16.5 9c-.5-.6-1.2-.9-2-.9s-1.5.3-2 .9L12 10l-.5-.9c-.5-.6-1.2-.9-2-.9s-1.5.3-2 .9L5 12c-.6.6-1 1.5-1 2.5z" fill="white"/></svg>
+          <span style="font-size:10px;font-weight:700;color:#0081FB;letter-spacing:.06em;text-transform:uppercase;">Meta Ads · Son 7 Gün</span>
         </div>
         <div id="meta-social-container">
           <div style="font-size:12px;color:var(--dim);">Yükleniyor…</div>
         </div>
       </div>
+
+      <!-- Instagram -->
       <div class="live-card">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
           <svg width="20" height="20" viewBox="0 0 24 24"><defs><radialGradient id="igG" cx="30%" cy="107%" r="140%"><stop offset="0%" stop-color="#fdf497"/><stop offset="20%" stop-color="#fd5949"/><stop offset="55%" stop-color="#d6249f"/><stop offset="90%" stop-color="#285AEB"/></radialGradient></defs><rect width="24" height="24" rx="6" fill="url(#igG)"/><rect x="6" y="6" width="12" height="12" rx="3.5" fill="none" stroke="white" stroke-width="1.5"/><circle cx="12" cy="12" r="3" fill="none" stroke="white" stroke-width="1.5"/><circle cx="17" cy="7" r="1" fill="white"/></svg>
           <span style="font-size:11px;font-weight:700;background:linear-gradient(90deg,#fd5949,#d6249f,#285AEB);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:.08em;">INSTAGRAM</span>
         </div>
         <div id="ig-live-container">
-          <div style="font-size:12px; color:var(--yellow);">Yükleniyor…</div>
+          <div style="font-size:12px;color:var(--yellow);">Yükleniyor…</div>
         </div>
       </div>
-    </div>
-  </section>
 
-  <!-- CANLI REKLAM VERİSİ -->
-  <section class="fade-up">
-    <div class="section-hdr">
-      <span class="section-title">Canlı Reklam Özeti — Son 7 Gün</span>
-      <span class="chip chip-yellow" id="live-section-badge">Yükleniyor…</span>
-    </div>
-    <div class="live-2col">
+      <!-- Google Ads -->
       <div class="live-card">
-        <div class="live-card-title">Meta Ads <span style="color:var(--dim);font-size:10px;font-weight:400;text-transform:none;">act_875332702913852</span></div>
-        <div id="meta-live-container"><div class="live-placeholder">Yükleniyor…</div></div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="12" fill="#fff"/><path d="M19.3 10H12v4h4.2c-.4 2-2.1 3.3-4.2 3.3-2.5 0-4.5-2-4.5-4.3S9.5 8.7 12 8.7c1.2 0 2.2.4 3 1.1l2.9-2.9C16.4 5.5 14.3 4.7 12 4.7 7.3 4.7 3.5 8.4 3.5 12S7.3 19.3 12 19.3c4.4 0 7.5-3 7.5-7.3 0-.4 0-.7-.1-1z" fill="#4285F4"/><path d="M4.8 8.3l3.4 2.4C9.1 9 10.4 8 12 8c1.2 0 2.2.4 3 1.1l2.9-2.9C16.4 5.5 14.3 4.7 12 4.7c-3 0-5.7 1.4-7.2 3.6z" fill="#EA4335"/></svg>
+          <span style="font-size:11px;font-weight:700;color:#4285F4;letter-spacing:.08em;">GOOGLE ADS</span>
+          <span style="font-size:10px;color:var(--dim);">502-189-2462</span>
+        </div>
+        <div id="gads-live-container"><div class="live-placeholder">Proxy bekleniyor…</div></div>
       </div>
-      <div class="live-card">
-        <div class="live-card-title">Google Ads <span style="color:var(--dim);font-size:10px;font-weight:400;text-transform:none;">502-189-2462</span></div>
-        <div id="gads-live-container"><div class="live-placeholder">Proxy bekleniyor — terminalde <code style="font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--dim);">ficila-proxy</code></div></div>
-      </div>
+
     </div>
   </section>
 
@@ -1106,37 +1134,65 @@ footer {
         <div style="font-size:12px; font-weight:600; color:var(--yellow); margin-bottom:14px; display:flex; align-items:center; gap:6px;">
           <span>→</span> Açık Görevler
         </div>
-        <div class="check-item" onclick="toggle(this)">
+        <div class="check-item" data-deletable="true"
+          data-verify-title="CPC Optimizasyonu Doğrulama"
+          data-verify-steps="Google Ads'e gir → Nitro Kahve kampanyasını aç|Anahtar kelime tekliflerini kontrol et — her biri ≤5 ₺ olmalı|'Tümünü Yenile'ye bas → KPI kartında CPC &lt;5 ₺ göründüğünü doğrula"
+          data-verify-url="https://ads.google.com"
+          onclick="toggle(this)">
           <div class="check-box"></div>
           <div class="check-label">Google Ads Nitro Kahve CPC optimize et — 10.24 ₺ → hedef &lt;5 ₺</div>
           <span class="check-priority"><span class="chip chip-red">KRİTİK</span></span>
         </div>
-        <div class="check-item" onclick="toggle(this)">
-          <div class="check-box"></div>
+        <div class="check-item checked" data-deletable="true"
+          data-verify-title="Blog Yazısı Yayın Doğrulama"
+          data-verify-steps="ficila.com.tr/nitro-kahve/ adresine git|N2 vs CO2 yazısının listede göründüğünü kontrol et|Yazıyı aç → URL /nitro-kahve/n2-co2-fark-kafe-bar-rehberi/ olmalı"
+          data-verify-url="https://ficila.com.tr/nitro-kahve/"
+          onclick="toggle(this)">
+          <div class="check-box">✓</div>
           <div class="check-label">N2 vs CO2 blog yazısı — B2B kafe/bar rehberi (8 Nis yayın hedefi)</div>
           <span class="check-priority"><span class="chip chip-orange">YÜKSEK</span></span>
         </div>
-        <div class="check-item" onclick="toggle(this)">
+        <div class="check-item" data-deletable="true"
+          data-verify-title="Kampanya Gösterim Kontrolü"
+          data-verify-steps="Google Ads'e gir → Tüm kampanyalar görünümü|Brand Protection ve Nitro Kokteyl satırlarını bul|İmpression sütununun 0'dan büyük olduğunu doğrula"
+          data-verify-url="https://ads.google.com"
+          onclick="toggle(this)">
           <div class="check-box"></div>
           <div class="check-label">Brand Protection + Nitro Kokteyl kampanyaları: 0 gösterim — bütçe/teklif kontrol</div>
           <span class="check-priority"><span class="chip chip-orange">YÜKSEK</span></span>
         </div>
-        <div class="check-item" onclick="toggle(this)">
+        <div class="check-item" data-deletable="true"
+          data-verify-title="Merchant Center Feed Kontrolü"
+          data-verify-steps="Google Merchant Center'a gir → Ürünler → Feed durumu|Hata sayısının 0 olduğunu doğrula|Onaylanan ürün sayısının değişmediğini kontrol et"
+          data-verify-url="https://merchants.google.com"
+          onclick="toggle(this)">
           <div class="check-box"></div>
           <div class="check-label">Merchant Center envanter hatasının temizlendiğini doğrula (24 saat)</div>
           <span class="check-priority"><span class="chip chip-yellow">ORTA</span></span>
         </div>
-        <div class="check-item" onclick="toggle(this)">
+        <div class="check-item" data-deletable="true"
+          data-verify-title="GA4 JS Error Tespiti"
+          data-verify-steps="GA4 → Raporlar → Olaylar → 'js_error' filtrele|Hangi sayfalarda oluştuğunu not et|GTM'de özel etiket kurulduğunu doğrula"
+          data-verify-url="https://analytics.google.com"
+          onclick="toggle(this)">
           <div class="check-box"></div>
           <div class="check-label">GA4 JS Error eventleri — hangi sayfadan geldiğini tespit et (22 adet)</div>
           <span class="check-priority"><span class="chip chip-yellow">ORTA</span></span>
         </div>
-        <div class="check-item" onclick="toggle(this)">
+        <div class="check-item" data-deletable="true"
+          data-verify-title="Meta Token Yenileme"
+          data-verify-steps="developers.facebook.com/tools/explorer adresine git|NEO app'i seç → izinleri kontrol et → Generate Token|Yeni token'ı dashboard META_TOKEN değişkenine yapıştır|'Tümünü Yenile'ye bas → Meta verisinin geldiğini doğrula"
+          data-verify-url="https://developers.facebook.com/tools/explorer"
+          onclick="toggle(this)">
           <div class="check-box"></div>
-          <div class="check-label">Meta token yenile — son tarih: 26 Mayıs 2026 (developers.facebook.com/tools/explorer)</div>
+          <div class="check-label">Meta token yenile — son tarih: 28 Mayıs 2026</div>
           <span class="check-priority"><span class="chip chip-yellow">ORTA</span></span>
         </div>
-        <div class="check-item" onclick="toggle(this)">
+        <div class="check-item" data-deletable="true"
+          data-verify-title="Stok Yenileme Kontrolü"
+          data-verify-steps="WooCommerce Admin → Ürünler → KegKing Apollo 30L'i bul|Stok durumunu 'Stokta Var' olarak güncelle|CO2 Regülatör için aynı işlemi tekrarla|Ürün sayfalarının 'Stokta Yok' göstermediğini doğrula"
+          data-verify-url="https://ficila.com.tr/wp-admin/edit.php?post_type=product"
+          onclick="toggle(this)">
           <div class="check-box"></div>
           <div class="check-label">KegKing Apollo 30L + CO2 Regülatör stok yenileme</div>
           <span class="check-priority"><span class="chip chip-yellow">ORTA</span></span>
@@ -1262,16 +1318,36 @@ function openVerify(el) {
 
 function confirmVerify() {
   if (_pendingEl) {
-    _pendingEl.classList.add('checked');
-    const key = _pendingEl.dataset.key;
-    if (key) localStorage.setItem(key, '1');
+    var el = _pendingEl;
     _pendingEl = null;
+    document.getElementById('verify-drawer').classList.remove('open');
+    if (el.dataset.deletable === 'true') {
+      // Test passed → animate delete
+      el.classList.add('deleting');
+      setTimeout(function() { if (el.parentNode) el.parentNode.removeChild(el); }, 480);
+    } else {
+      el.classList.add('checked');
+      var key = el.dataset.key;
+      if (key) localStorage.setItem(key, '1');
+    }
+    return;
   }
   document.getElementById('verify-drawer').classList.remove('open');
 }
 
 function cancelVerify() {
-  _pendingEl = null;
+  if (_pendingEl) {
+    // Test failed → add badge
+    var existing = _pendingEl.querySelector('.task-fail-badge');
+    if (!existing) {
+      var badge = document.createElement('span');
+      badge.className = 'task-fail-badge';
+      badge.textContent = '⚠ Testi geçemedi';
+      _pendingEl.appendChild(badge);
+      _pendingEl.classList.add('failed');
+    }
+    _pendingEl = null;
+  }
   document.getElementById('verify-drawer').classList.remove('open');
 }
 
@@ -1351,6 +1427,31 @@ var META_ACT   = 'act_875332702913852';
 var SHEET_ID   = '14K6A1QrCSp-ndCwSiXZ4uIHG1CAQsAXgw8cF_f3XAJg';
 var PROXY_BASE = 'https://ficila-proxy.onrender.com';
 var PROXY_KEY  = 'ficila2026';
+
+// ── WoW DELTA ──
+// Stores previous values; shows % change on next session (>1h gap)
+function savePrev(key, val) {
+  var now = Date.now();
+  var lastTs = parseInt(localStorage.getItem('ficila-kv-ts-' + key) || '0');
+  if (now - lastTs > 3600000) { // >1h → promote current to prev
+    var cur = localStorage.getItem('ficila-kv-' + key);
+    if (cur !== null) localStorage.setItem('ficila-prev-' + key, cur);
+    localStorage.setItem('ficila-kv-ts-' + key, String(now));
+  }
+  localStorage.setItem('ficila-kv-' + key, String(val));
+}
+function showDelta(spanId, key, currentVal) {
+  var el = document.getElementById(spanId);
+  if (!el) return;
+  var prev = parseFloat(localStorage.getItem('ficila-prev-' + key));
+  var cur  = parseFloat(currentVal);
+  if (isNaN(prev) || isNaN(cur) || prev === 0) { el.textContent = ''; el.className = 'kpi-delta'; return; }
+  var delta = (cur - prev) / Math.abs(prev) * 100;
+  var sign = delta >= 0 ? '+' : '';
+  el.textContent = sign + delta.toFixed(1) + '%';
+  el.className = 'kpi-delta ' + (delta > 1 ? 'up' : delta < -1 ? 'down' : 'flat');
+  el.title = 'Önceki: ' + prev.toFixed(0) + ' → Şimdi: ' + cur.toFixed(0) + ' (önceki yenilemeye göre)';
+}
 
 // ── helpers ──
 function esc(s) {
@@ -1474,6 +1575,7 @@ function loadMeta() {
         cpmEl.textContent = totalSpend > 0 ? fmtN(avgCpm,1)+'\u00a0\u20ba' : '0\u00a0\u20ba';
         cpmEl.style.color = avgCpm<60?'var(--green)':avgCpm<100?'var(--yellow)':'var(--red)';
       }
+      savePrev('meta-spend', totalSpend); showDelta('kpi-meta-cpm-delta', 'meta-spend', totalSpend);
       setText('kpi-meta-cpm-target', 'Hedef: <60 \u20ba \u00b7 Harcama: ' + fmtTL(totalSpend));
 
       var totalClicks = 0, totalReach = 0;
@@ -1584,9 +1686,22 @@ function loadProxy() {
       var cpcEl = document.getElementById('kpi-gads-cpc');
       if (cpcEl) {
         cpcEl.textContent = avgCpc>0 ? fmtTL(avgCpc) : '\u2014';
+        var cpcDeltaEl = document.getElementById('kpi-gads-cpc-delta');
+        if (cpcDeltaEl) cpcEl.appendChild(cpcDeltaEl); // preserve delta span
         cpcEl.style.color = avgCpc<5?'var(--green)':avgCpc<8?'var(--yellow)':'var(--red)';
       }
+      savePrev('gads-cpc', avgCpc); showDelta('kpi-gads-cpc-delta', 'gads-cpc', avgCpc);
+      savePrev('gads-spend', totalSpend);
       setText('kpi-gads-cpc-target', 'Hedef: <5 \u20ba \u00b7 Harcama: ' + fmtTL(totalSpend));
+      // Sync kritik uyarılar
+      var kritikCpcVal = document.getElementById('kritik-cpc-val');
+      if (kritikCpcVal && avgCpc > 0) kritikCpcVal.textContent = fmtTL(avgCpc);
+      var kritikCpcItem = document.getElementById('kritik-cpc-item');
+      if (kritikCpcItem) kritikCpcItem.classList.toggle('hidden', avgCpc > 0 && avgCpc <= 5);
+      // Update kritik count
+      var kritikItems = document.querySelectorAll('#kritik-list .alert-item:not(.hidden)');
+      var kc = document.getElementById('kritik-count');
+      if (kc) { kc.textContent = kritikItems.length + ' aktif'; kc.className = kritikItems.length > 0 ? 'chip chip-red' : 'chip chip-green'; }
 
       var cpcColor = avgCpc<5?'var(--green)':avgCpc<8?'var(--yellow)':'var(--red)';
 
@@ -1821,6 +1936,7 @@ function loadKpis() {
     .then(function(d) {
       if (d.error) { setText('kpi-sales', '—'); setText('kpi-sales-target', d.error.substring(0,40)); return; }
       var gross = d.gross_sales || 0;
+      savePrev('sales', gross); showDelta('kpi-sales-delta', 'sales', gross);
       setText('kpi-sales', fmtTL(gross));
       setText('kpi-sales-target', d.orders + ' sipariş · Net: ' + fmtTL(d.net_revenue));
       var pct = Math.min(100, Math.round(gross / 100000 * 100));
@@ -1840,12 +1956,14 @@ function loadKpis() {
         setText('kpi-shopping', '—'); setText('kpi-shopping-target', d.error.substring(0,40));
         return;
       }
+      savePrev('organic', d.organic_sessions || 0); showDelta('kpi-organic-delta', 'organic', d.organic_sessions || 0);
       setText('kpi-organic', String(d.organic_sessions || 0));
       setText('kpi-organic-target', 'Organik arama · %' + (d.organic_pct||0) + ' pay · Toplam: ' + (d.total_sessions||0));
       var orgPct = Math.min(100, Math.round((d.organic_pct||0) * 2));
       var orgBar = document.getElementById('kpi-organic-bar');
       if (orgBar) orgBar.style.width = orgPct + '%';
 
+      savePrev('shopping', d.shopping_revenue || 0); showDelta('kpi-shopping-delta', 'shopping', d.shopping_revenue || 0);
       setText('kpi-shopping', fmtTL(d.shopping_revenue || 0));
       setText('kpi-shopping-target', 'Shopping kanalı · GA4 cari ay');
       var shopBar = document.getElementById('kpi-shopping-bar');
@@ -1861,6 +1979,7 @@ function loadKpis() {
     .then(function(r) { return r.json(); })
     .then(function(d) {
       if (d.error) { setText('kpi-ctr', '—'); setText('kpi-ctr-target', d.error.substring(0,40)); return; }
+      savePrev('ctr', d.ctr || 0); showDelta('kpi-ctr-delta', 'ctr', d.ctr || 0);
       setText('kpi-ctr', '%' + (d.ctr || 0));
       setText('kpi-ctr-target', d.clicks + ' tık · ' + d.impressions + ' gösterim · Pos: ' + d.position);
       var ctr = d.ctr || 0;
